@@ -14,9 +14,15 @@ def new_grid():
     grid = np.zeros([GRID_SIZE,GRID_SIZE])
     return grid
 
-def new_pos():
-    return (randrange(GRID_SIZE - 1), randrange(GRID_SIZE - 1))
+def new_pos(existing):
+    generated = (randrange(GRID_SIZE - 1), randrange(GRID_SIZE - 1))
+    # if there are any duplicates, retry
+    if np.any(np.in1d(generated, existing)):
+        return new_pos(existing)
+    return generated
 
+def unique(a):
+    return list(set(a))
 
 class Action(Enum):
     North = 1
@@ -42,12 +48,9 @@ def limit_to_size(pos):
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    grid = new_grid()
-    players = [new_pos() for x in np.arange(NO_OF_PLAYERS)]
-    goals = [new_pos() for x in np.arange(NO_OF_PLAYERS)]
 
     def __init__(self):
-        pass
+        self.reset()
  
     def step(self, actions):
         self.players = [limit_to_size(move(player, action)) for player, action in zip(self.players, actions)]
@@ -60,8 +63,11 @@ class GridEnv(gym.Env):
  
     def reset(self):
         self.grid = new_grid()
-        self.players = [new_pos() for x in np.arange(NO_OF_PLAYERS + 1)]
-        self.goals = [new_pos() for x in np.arange(NO_OF_PLAYERS + 1)]
+        self.players = unique([new_pos([]) for x in np.arange(NO_OF_PLAYERS)])
+        self.goals = unique([new_pos(self.players) for x in np.arange(NO_OF_PLAYERS)])
+        # If we there are duplicate positions, retry
+        if len(self.players) != 2 or len(self.goals) != 2:
+            return self.reset()
         return self.get_state()
 
     def get_state(self):
@@ -81,4 +87,6 @@ env = GridEnv()
 print(env.render())
 print(env.players)
 print(env.step([Action.East,Action.East])[0][1])
-print(env.players)
+print(env.goals)
+
+print(np.any(np.in1d(env.players, env.goals)))
