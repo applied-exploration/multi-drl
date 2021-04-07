@@ -61,7 +61,7 @@ class MADDPG:
 
         # ---                   GET AGENT                  --- #
         agent = self.maddpg_agent[agent_number]
-        agent.critic_optimizer.zero_grad()
+        agent.critic_opt.zero_grad()
 
 
         # ---                   UPDATE CRITIC (TD)                   --- #
@@ -76,18 +76,18 @@ class MADDPG:
         target_critic_input = torch.cat((next_obs_full.t(),target_actions), dim=1).to(DEVICE)
         
         with torch.no_grad():
-            q_next = agent.target_critic(target_critic_input)
+            q_next = agent.critic_target(target_critic_input)
         
         y = reward[agent_number].view(-1, 1) + self.discount_factor * q_next * (1 - done[agent_number].view(-1, 1))
         action = torch.cat(action, dim=1)
         critic_input = torch.cat((obs_full.t(), action), dim=1).to(DEVICE)
-        q = agent.critic(critic_input)
+        q = agent.critic_local(critic_input)
 
         huber_loss = torch.nn.SmoothL1Loss()
         critic_loss = huber_loss(q, y.detach())
         critic_loss.backward()
         #torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), 0.5)
-        agent.critic_optimizer.step()
+        agent.critic_opt.step()
 
 
         # ---                   UPDATE ACTOR (PPO)                   --- #
@@ -96,10 +96,10 @@ class MADDPG:
             detach the other agents to save computation
             saves some time for computing derivative
         """
-        agent.actor_optimizer.zero_grad()
+        agent.actor_opt.zero_grad()
 
-        q_input = [ self.maddpg_agent[i].actor(ob) if i == agent_number \
-                   else self.maddpg_agent[i].actor(ob).detach()
+        q_input = [ self.maddpg_agent[i].actor_local(ob) if i == agent_number \
+                   else self.maddpg_agent[i].actor_local(ob).detach()
                    for i, ob in enumerate(obs) ]
                 
         q_input = torch.cat(q_input, dim=1)
@@ -108,10 +108,10 @@ class MADDPG:
         q_input2 = torch.cat((obs_full.t(), q_input), dim=1)
         
         # get the policy gradient
-        actor_loss = -agent.critic(q_input2).mean()
+        actor_loss = -agent.critic_local(q_input2).mean()
         actor_loss.backward()
         #torch.nn.utils.clip_grad_norm_(agent.actor.parameters(),0.5)
-        agent.actor_optimizer.step()
+        agent.actor_opt.step()
 
         al = actor_loss.cpu().detach().item()
         cl = critic_loss.cpu().detach().item()
@@ -124,8 +124,8 @@ class MADDPG:
         """soft update targets"""
         self.iter += 1
         for ddpg_agent in self.maddpg_agent:
-            soft_update(ddpg_agent.target_actor, ddpg_agent.actor, self.tau)
-            soft_update(ddpg_agent.target_critic, ddpg_agent.critic, self.tau)
+            soft_update(ddpg_agent.actor_target, ddpg_agent.actor_local, self.tau)
+            soft_update(ddpg_agent.critic_target, ddpg_agent.critic_local, self.tau)
             
             
             
