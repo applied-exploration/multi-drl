@@ -24,14 +24,16 @@ class Action(Enum):
     West = 4
 
 def move(pos, action):
-    if action == North:
+    if action == Action.North:
         return (pos[0], pos[1] + 1)
-    elif action == South:
+    elif action == Action.South:
         return (pos[0], pos[1] - 1)
-    elif action == East:
+    elif action == Action.East:
         return (pos[0] - 1, pos[1])
-    elif action == West:
+    elif action == Action.West:
         return (pos[0] + 1, pos[1])
+    else:
+        raise Exception('not an action')
 
 def limit_to_size(pos):
     return tuple(map(lambda x: min(x, grid_size), pos))
@@ -49,8 +51,8 @@ class GridEnv(gym.Env):
         pass
  
     def step(self, actions):
-        self.player_a = limit_to_size(move(self.player_a, action[0]))
-        self.player_b = limit_to_size(move(self.player_b, action[1]))
+        self.player_a = limit_to_size(move(self.player_a, actions[0]))
+        self.player_b = limit_to_size(move(self.player_b, actions[1]))
 
         states = [self.get_state(), self.get_state()]
         rewards = [
@@ -83,4 +85,4 @@ class GridEnv(gym.Env):
     
 env = GridEnv()
 print(env.render())
-env.step([1,1])
+print(env.step([Action.East,Action.West]))
