@@ -15,7 +15,7 @@ def new_grid():
     return grid
 
 def new_pos(existing):
-    generated = (randrange(GRID_SIZE - 1), randrange(GRID_SIZE - 1))
+    generated = (randrange(GRID_SIZE), randrange(GRID_SIZE))
     # if there are any duplicates, retry
     if np.any(np.in1d(generated, existing)):
         return new_pos(existing)
@@ -43,7 +43,7 @@ def move(pos, action):
         raise Exception('not an action')
 
 def limit_to_size(pos):
-    return tuple(map(lambda x: max(min(x, GRID_SIZE), 0), pos))
+    return tuple(map(lambda x: max(min(x, GRID_SIZE - 1), 0), pos))
 
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
