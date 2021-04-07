@@ -7,14 +7,15 @@ from enum import Enum
 import numpy as np
 from typing import List, Tuple
 
-grid_size = 8
+GRID_SIZE = 8
+NO_OF_PLAYERS = 2
 
 def new_grid():
-    grid = np.zeros([grid_size,grid_size])
+    grid = np.zeros([GRID_SIZE,GRID_SIZE])
     return grid
 
 def new_pos():
-    return (randrange(grid_size - 1), randrange(grid_size - 1))
+    return (randrange(GRID_SIZE - 1), randrange(GRID_SIZE - 1))
 
 
 class Action(Enum):
@@ -25,59 +26,52 @@ class Action(Enum):
 
 def move(pos, action):
     if action == Action.North:
-        return (pos[0], pos[1] + 1)
-    elif action == Action.South:
         return (pos[0], pos[1] - 1)
+    elif action == Action.South:
+        return (pos[0], pos[1] + 1)
     elif action == Action.East:
-        return (pos[0] - 1, pos[1])
-    elif action == Action.West:
         return (pos[0] + 1, pos[1])
+    elif action == Action.West:
+        return (pos[0] - 1, pos[1])
     else:
         raise Exception('not an action')
 
 def limit_to_size(pos):
-    return tuple(map(lambda x: min(x, grid_size), pos))
+    return tuple(map(lambda x: max(min(x, GRID_SIZE), 0), pos))
 
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
     grid = new_grid()
-    player_a = new_pos()
-    player_b = new_pos()
-    goal_a = new_pos()
-    goal_b = new_pos()
+    players = [new_pos() for x in np.arange(NO_OF_PLAYERS)]
+    goals = [new_pos() for x in np.arange(NO_OF_PLAYERS)]
 
     def __init__(self):
         pass
  
     def step(self, actions):
-        self.player_a = limit_to_size(move(self.player_a, actions[0]))
-        self.player_b = limit_to_size(move(self.player_b, actions[1]))
+        self.players = [limit_to_size(move(player, action)) for player, action in zip(self.players, actions)]
 
         states = [self.get_state(), self.get_state()]
-        rewards = [
-            10 if self.player_a == self.goal_a else -1,
-            10 if self.player_b == self.goal_b else -1,
-            ]
-        done = self.player_a == self.goal_a or self.player_b == self.goal_b 
+        is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
+        rewards = list(map(lambda x: -1 if x == False else 10, is_at_goal))
+        done = True in is_at_goal 
         return (states, rewards, done)
  
     def reset(self):
         self.grid = new_grid()
-        self.player_a = new_pos()
-        self.player_b = new_pos()
-        self.goal_a = new_pos()
-        self.goal_b = new_pos()
+        self.players = [new_pos() for x in np.arange(NO_OF_PLAYERS + 1)]
+        self.goals = [new_pos() for x in np.arange(NO_OF_PLAYERS + 1)]
         return self.get_state()
 
     def get_state(self):
-        current_state = np.copy(self.grid)
-        current_state[self.player_a[0]][self.player_a[1]] = 1
-        current_state[self.player_b[0]][self.player_b[1]] = 2
+        annotated_grid = np.copy(self.grid)
+        for index, player in enumerate(self.players):
+            annotated_grid[player[1]][player[0]] = index + 1
 
-        current_state[self.goal_a[0]][self.goal_a[1]] = 11
-        current_state[self.goal_b[0]][self.goal_b[1]] = 22
-        return current_state
+        for index, goal in enumerate(self.goals):
+            annotated_grid[goal[1]][goal[0]] = (index +1) * 10 + (index + 1)
+        return annotated_grid
  
     def render(self, mode='human', close=False):
         return self.get_state()
@@ -85,4 +79,6 @@ class GridEnv(gym.Env):
     
 env = GridEnv()
 print(env.render())
-print(env.step([Action.East,Action.West]))
+print(env.players)
+print(env.step([Action.East,Action.East])[0][1])
+print(env.players)
