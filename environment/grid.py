@@ -8,22 +8,20 @@ import numpy as np
 from typing import List, Tuple
 import itertools
 
-GRID_SIZE = 8
-NO_OF_PLAYERS = 2
 
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def new_grid():
-    grid = np.zeros([GRID_SIZE,GRID_SIZE])
+def new_grid(size):
+    grid = np.zeros([size,size])
     return grid
 
-def new_pos(existing):
-    generated = (randrange(GRID_SIZE), randrange(GRID_SIZE))
+def new_pos(existing, size):
+    generated = (randrange(size), randrange(size))
     # if there are any duplicates, retry
     if np.any(np.in1d(generated, existing)):
-        return new_pos(existing)
+        return new_pos(existing, size)
     return generated
 
 def unique(a):
@@ -47,40 +45,41 @@ def move(pos, action):
     else:
         raise Exception('not an action')
 
-def limit_to_size(pos):
-    return tuple(map(lambda x: max(min(x, GRID_SIZE - 1), 0), pos))
+def limit_to_size(pos, grid_size):
+    return tuple(map(lambda x: max(min(x, grid_size - 1), 0), pos))
 
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-
-    def __init__(self):
+    def __init__(self, num_agent = 2, grid_size = 8):
+        self.num_agent = num_agent
+        self.grid_size = grid_size
         self.reset()
-        self.num_agent = NO_OF_PLAYERS
         self.action_space = spaces.Discrete(4)
-        self.state_space = GRID_SIZE * GRID_SIZE
+        self.state_space = num_agent * 4
  
     def step(self, actions):
-        self.players = [limit_to_size(move(player, action)) for player, action in zip(self.players, actions)]
+        self.players = [limit_to_size(move(player, action), self.grid_size) for player, action in zip(self.players, actions)]
 
-        states = [self.get_state(), self.get_state()]
+        states = self.get_state()
         is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
         rewards = list(map(lambda x: -1 if x == False else 10, is_at_goal))
         done = True in is_at_goal 
         return (states, rewards, done)
  
     def reset(self):
-        self.grid = new_grid()
-        self.players = unique([new_pos([]) for x in np.arange(NO_OF_PLAYERS)])
-        self.goals = unique([new_pos(self.players) for x in np.arange(NO_OF_PLAYERS)])
+        self.grid = new_grid(self.grid_size)
+        self.players = unique([new_pos([], self.grid_size) for x in np.arange(self.num_agent)])
+        self.goals = unique([new_pos(self.players, self.grid_size) for x in np.arange(self.num_agent)])
         # If we there are duplicate positions, retry
         if len(self.players) != 2 or len(self.goals) != 2:
             return self.reset()
         return self.get_state()
 
     def get_state(self):
-        return list(map(lambda x: x / 8, flatten([flatten(self.players), flatten(self.goals)])))
- 
+        zipped = list(map(flatten, list(zip(self.players, self.goals))))
+        return list(map(lambda inner_array: list(map(lambda x: x / 8, inner_array)), zipped))
+
     def render(self, mode='human', close=False):
         annotated_grid = np.copy(self.grid)
         for index, player in enumerate(self.players):
@@ -93,7 +92,9 @@ class GridEnv(gym.Env):
     
 env = GridEnv()
 print(env.render())
+# print(env.players)
+print(env.step([1,Action.East]))
+# print(env.goals)
+print("----")
 print(env.players)
-print(env.step([1,Action.East])[0][1])
 print(env.goals)
-
