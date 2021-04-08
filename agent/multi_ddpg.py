@@ -9,7 +9,7 @@ from utilities import soft_update, transpose_to_tensor, transpose_list
 
 from constants import *  
 
-class MADDPG:
+class MADDPG():
     def __init__(self, state_size, action_size, random_seed=32, num_agent = 2):
         super(MADDPG, self).__init__()
 
