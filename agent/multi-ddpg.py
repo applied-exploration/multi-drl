@@ -59,9 +59,11 @@ class MADDPG:
         next_obs_full = torch.stack(next_obs_full)
 
 
+
         # ---                   GET AGENT                  --- #
         agent = self.maddpg_agent[agent_number]
         agent.critic_opt.zero_grad()
+
 
 
         # ---                   UPDATE CRITIC (TD)                   --- #
