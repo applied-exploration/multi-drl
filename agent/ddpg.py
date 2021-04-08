@@ -11,15 +11,15 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-class DDPG_Agent():
-    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300]):
+class DDPG_Agent:
+    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300], id=0):
         super(DDPG_Agent, self).__init__()
 
 
-        self.actor_local = Actor(state_size, action_size, random_seed, hidden_layer_param=[actor_hidden]).to(DEVICE)
-        self.actor_target = Actor(state_size, action_size, random_seed, hidden_layer_param=[actor_hidden]).to(DEVICE)
-        self.critic_local = Critic(state_size, action_size, random_seed, hidden_layer_param=[critic_hidden]).to(DEVICE)
-        self.critic_target = Critic(state_size, action_size, random_seed, hidden_layer_param=[critic_hidden]).to(DEVICE)
+        self.actor_local = Actor(state_size, action_size, random_seed, hidden_layer_param=actor_hidden).to(DEVICE)
+        self.actor_target = Actor(state_size, action_size, random_seed, hidden_layer_param=actor_hidden).to(DEVICE)
+        self.critic_local = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
+        self.critic_target = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
 
         self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
         self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC)
@@ -27,8 +27,10 @@ class DDPG_Agent():
         self.memory = ReplayBuffer(action_size, random_seed)
 
         self.seed = random.seed(random_seed)
+        self.id=id
+
         print("")
-        print("--- Agent Params ---")
+        print("--- Agent {} Params ---".format(self.id))
         print("Going to train on {}".format(DEVICE))
         print("Learning Rate:: Actor: {} | Critic: {}".format(LR_ACTOR, LR_CRITIC))
         print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(BUFFER_SIZE, BATCH_SIZE))

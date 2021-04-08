@@ -31,6 +31,8 @@ class Actor(nn.Module):
         self.fc_out.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state):
+        print("Gotten an input, it looks like this: ", state)
+        print("Shape: ", state.shape)
         x = self.activation(self.fc_in(state))
 
         for hidden_layer in self.hidden_layers:
