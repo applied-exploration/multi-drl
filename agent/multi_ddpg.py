@@ -2,19 +2,19 @@
 # policy + critic updates
 # see ddpg.py for other details in the network
 
-from ddpg import DDPGAgent
+from ddpg import DDPG_Agent
 import torch
 from utilities import soft_update, transpose_to_tensor, transpose_list
 #DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 from constants import *  
 
-class MADDPG():
+class MADDPG:
     def __init__(self, state_size, action_size, random_seed=32, num_agent = 2):
         super(MADDPG, self).__init__()
 
         # critic input = obs_full + actions = 14+2+2+2=20
-        self.maddpg_agent = [DDPGAgent(state_size, action_size, random_seed, [128, 64], [128, 64]) for _ in range(num_agent)]
+        self.maddpg_agent = [DDPG_Agent(state_size, action_size, random_seed, actor_hidden=[128, 64], critic_hidden=[128, 64], id=i) for i in range(num_agent)]
 
         
         #state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300]
