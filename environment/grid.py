@@ -6,9 +6,14 @@ from gym.utils import seeding
 from enum import Enum
 import numpy as np
 from typing import List, Tuple
+import itertools
 
 GRID_SIZE = 8
 NO_OF_PLAYERS = 2
+
+def flatten(list_of_lists):
+    return [item for sublist in list_of_lists for item in sublist]
+
 
 def new_grid():
     grid = np.zeros([GRID_SIZE,GRID_SIZE])
@@ -74,6 +79,9 @@ class GridEnv(gym.Env):
         return self.get_state()
 
     def get_state(self):
+        return list(map(lambda x: x / 8, flatten([flatten(self.players), flatten(self.goals)])))
+ 
+    def render(self, mode='human', close=False):
         annotated_grid = np.copy(self.grid)
         for index, player in enumerate(self.players):
             annotated_grid[player[1]][player[0]] = index + 1
@@ -81,9 +89,6 @@ class GridEnv(gym.Env):
         for index, goal in enumerate(self.goals):
             annotated_grid[goal[1]][goal[0]] = (index +1) * 10 + (index + 1)
         return annotated_grid
- 
-    def render(self, mode='human', close=False):
-        return self.get_state()
 
     
 env = GridEnv()
@@ -92,4 +97,3 @@ print(env.players)
 print(env.step([1,Action.East])[0][1])
 print(env.goals)
 
-print(np.any(np.in1d(env.players, env.goals)))
