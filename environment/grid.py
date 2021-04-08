@@ -56,12 +56,12 @@ class GridEnv(gym.Env):
         self.grid_size = grid_size
         self.reset()
         self.action_space = spaces.Discrete(4)
-        self.state_space = grid_size * grid_size
+        self.state_space = num_agent * 4
  
     def step(self, actions):
         self.players = [limit_to_size(move(player, action), self.grid_size) for player, action in zip(self.players, actions)]
 
-        states = [self.get_state(), self.get_state()]
+        states = self.get_state()
         is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
         rewards = list(map(lambda x: -1 if x == False else 10, is_at_goal))
         done = True in is_at_goal 
@@ -77,8 +77,9 @@ class GridEnv(gym.Env):
         return self.get_state()
 
     def get_state(self):
-        return list(map(lambda x: x / 8, flatten([flatten(self.players), flatten(self.goals)])))
- 
+        zipped = list(map(flatten, list(zip(self.players, self.goals))))
+        return list(map(lambda inner_array: list(map(lambda x: x / 8, inner_array)), zipped))
+
     def render(self, mode='human', close=False):
         annotated_grid = np.copy(self.grid)
         for index, player in enumerate(self.players):
@@ -91,7 +92,9 @@ class GridEnv(gym.Env):
     
 env = GridEnv()
 print(env.render())
+# print(env.players)
+print(env.step([1,Action.East]))
+# print(env.goals)
+print("----")
 print(env.players)
-print(env.step([1,Action.East])[0][1])
 print(env.goals)
-
