@@ -25,19 +25,19 @@ def unique(a):
     return list(set(a))
 
 class Action(Enum):
-    North = 1
-    South = 2
-    East = 3
-    West = 4
+    North = 0
+    South = 1
+    East = 2
+    West = 3
 
 def move(pos, action):
-    if action == Action.North:
+    if action == Action.North or action == 0:
         return (pos[0], pos[1] - 1)
-    elif action == Action.South:
+    elif action == Action.South or action == 1:
         return (pos[0], pos[1] + 1)
-    elif action == Action.East:
+    elif action == Action.East or action == 2:
         return (pos[0] + 1, pos[1])
-    elif action == Action.West:
+    elif action == Action.West or action == 3:
         return (pos[0] - 1, pos[1])
     else:
         raise Exception('not an action')
@@ -51,6 +51,9 @@ class GridEnv(gym.Env):
 
     def __init__(self):
         self.reset()
+        self.num_agent = NO_OF_PLAYERS
+        self.action_space = spaces.Discrete(4)
+        self.state_space = GRID_SIZE * GRID_SIZE
  
     def step(self, actions):
         self.players = [limit_to_size(move(player, action)) for player, action in zip(self.players, actions)]
@@ -86,7 +89,7 @@ class GridEnv(gym.Env):
 env = GridEnv()
 print(env.render())
 print(env.players)
-print(env.step([Action.East,Action.East])[0][1])
+print(env.step([1,Action.East])[0][1])
 print(env.goals)
 
 print(np.any(np.in1d(env.players, env.goals)))
