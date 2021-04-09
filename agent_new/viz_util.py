@@ -9,5 +9,5 @@ def interactive_plotting(y, x=None):
     #for i in range(50):
         clear_output(wait=True)
         #y.append(np.log(np.e*i))
-        plt.plot(y)
+        plt.plot(y, x)
         plt.show()

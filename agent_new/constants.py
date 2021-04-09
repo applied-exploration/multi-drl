@@ -8,7 +8,7 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")     # Tr
 # Replay Buffer parameters #
 BUFFER_SIZE = int(1e5)          # Replay Buffer size
 UPDATE_EVERY = 4                # Define how often the target model gets exchanged by the local model (episode num). Not used in DDPG, because we gradually mix the two models
-BATCH_SIZE = 24                # Minibatch size
+BATCH_SIZE = 24                 # Minibatch size
 
 # Learning parameters #
 GAMMA = 0.99                    # Discount rate
