@@ -45,7 +45,7 @@ class MADDPG:
     def target_act(self, obs_all_agents, noise=0.0):
         """get target network actions from all the agents in the MADDPG object """
 
-        print("Network for a single element gives back: ", self.maddpg_agent[0].target_act(obs_all_agents).shape)
+        #print("Network for a single element gives back: ", self.maddpg_agent[0].target_act(obs_all_agents).shape)
         target_actions = [ddpg_agent.target_act(obs, noise) for ddpg_agent, obs in zip(self.maddpg_agent, obs_all_agents)]
         print(target_actions)
         return target_actions
