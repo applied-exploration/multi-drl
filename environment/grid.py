@@ -79,7 +79,7 @@ class GridEnv(gym.Env):
         self.players = unique([new_pos([], self.grid_size) for x in np.arange(self.num_agent)])
         self.goals = unique([new_pos(self.players, self.grid_size) for x in np.arange(self.num_agent)])
         # If we there are duplicate positions, retry
-        if len(self.players) != 2 or len(self.goals) != 2:
+        if len(self.players) != self.num_agent or len(self.goals) != self.num_agent:
             return self.reset()
         return self.get_state()
 
@@ -97,7 +97,7 @@ class GridEnv(gym.Env):
         return annotated_grid
 
     
-env = GridEnv()
+env = GridEnv(1)
 print(env.render())
 # print(env.players)
 print(env.step([1,Action.East]))
