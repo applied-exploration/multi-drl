@@ -5,14 +5,14 @@ import random                       # Used for random seed
 import copy                         # This is used for the mixing of target and local model parameters
 
 from constants import *             # Capital lettered variables are constants from the constants.py file
-from memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
+
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
 class DDPG_Agent:
-    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300], id=0):
+    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300], id=0, num_agent=1):
         super(DDPG_Agent, self).__init__()
 
 
@@ -24,7 +24,7 @@ class DDPG_Agent:
         self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
         self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC)
 
-        self.memory = ReplayBuffer(action_size, random_seed)
+
 
         self.seed = random.seed(random_seed)
         self.id=id
@@ -58,7 +58,7 @@ class DDPG_Agent:
     def target_act(self, obs, noise=0.0):
         obs = obs.to(DEVICE)
 
-        self.actor_local.eval()
+        self.actor_target.eval()
         with torch.no_grad():
             action = self.actor_target(obs) #+ noise*self.noise.noise()
 
