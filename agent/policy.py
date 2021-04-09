@@ -31,16 +31,16 @@ class Actor(nn.Module):
         self.fc_out.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state):
-        print("Gotten an input, it looks like this: ", state)
-        print("Shape: ", state.shape)
+        # print("Gotten an input, it looks like this: ", state)
+        # print("Shape: ", state.shape)
         x = self.activation(self.fc_in(state))
 
         for hidden_layer in self.hidden_layers:
             x = self.activation(hidden_layer(x))
 
         x = self.activation(self.fc_out(x)) 
-
-        return F.tanh(x)
+        # print(x)
+        return F.softmax(x)
 
 class Critic(nn.Module):
     def __init__(self, state_space, action_space, random_seed = 32, hidden_layer_param = [400, 300] ):
