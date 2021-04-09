@@ -7,7 +7,7 @@ from enum import Enum
 import numpy as np
 from typing import List, Tuple
 import itertools
-
+from iteration_utilities import duplicates , unique_everseen
 
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
@@ -57,13 +57,20 @@ class GridEnv(gym.Env):
         self.reset()
         self.action_space = spaces.Discrete(4)
         self.state_space = num_agent * 4
- 
+
     def step(self, actions):
         self.players = [limit_to_size(move(player, action), self.grid_size) for player, action in zip(self.players, actions)]
 
         states = self.get_state()
         is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
-        rewards = list(map(lambda x: -1 if x == False else 10, is_at_goal))
+        reward_is_at_goal = [-1 if x == False else 10 for x in is_at_goal]
+        
+        # detect a crash
+        dup = list(unique_everseen(duplicates(self.players)))
+        # if a player's position appears twice, add -20 to the current reward
+        reward_is_crash = [-19 if (player in dup) else 0 for player in self.players]
+        rewards = [a + b for a, b in zip(reward_is_at_goal, reward_is_crash)]
+
         done = True in is_at_goal 
         return (states, rewards, done)
  
