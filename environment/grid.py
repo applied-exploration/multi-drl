@@ -3,7 +3,7 @@ import gym
 from random import randrange
 from gym import error, spaces, utils
 from gym.utils import seeding
-from enum import Enum
+from enum import IntEnum
 import numpy as np
 from typing import List, Tuple
 import itertools
@@ -27,20 +27,30 @@ def new_pos(existing, size):
 def unique(a):
     return list(set(a))
 
-class Action(Enum):
+class Action(IntEnum):
     North = 0
     South = 1
     East = 2
     West = 3
 
-def move(pos, action):
-    if action == Action.North or action == 0:
+confusion_matrix = {
+    Action.North: [Action.East, Action.West],
+    Action.South: [Action.East, Action.West],
+    Action.East: [Action.South, Action.North],
+    Action.West: [Action.South, Action.North],
+}
+
+def move(pos, action, prob = 1):
+    if prob != 1:
+        action = np.random.choice([action] + confusion_matrix[action], 1, p=[prob, ((1 - prob)/2), ((1 - prob)/2)])
+
+    if action == Action.North:
         return (pos[0], pos[1] - 1)
-    elif action == Action.South or action == 1:
+    elif action == Action.South:
         return (pos[0], pos[1] + 1)
-    elif action == Action.East or action == 2:
+    elif action == Action.East:
         return (pos[0] + 1, pos[1])
-    elif action == Action.West or action == 3:
+    elif action == Action.West:
         return (pos[0] - 1, pos[1])
     else:
         raise Exception('not an action')
@@ -51,15 +61,16 @@ def limit_to_size(pos, grid_size):
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1):
         self.num_agent = num_agent
         self.grid_size = grid_size
+        self.prob_right_direction = prob_right_direction
         self.reset()
         self.action_space = spaces.Discrete(4)
         self.state_space = num_agent * 4
 
     def step(self, actions):
-        self.players = [limit_to_size(move(player, action), self.grid_size) for player, action in zip(self.players, actions)]
+        self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]
 
         states = self.get_state()
         is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
