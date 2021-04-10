@@ -27,13 +27,19 @@ class MADDPG:
         self.tau = TAU
         self.iter = 0
 
+    def reset(self, state_size, action_size, random_seed=32, num_agent = 2):
+        self.maddpg_agent = [DDPG_Agent(state_size, action_size, random_seed, actor_hidden=[128, 64], critic_hidden=[128, 64], id=i) for i in range(num_agent)]
+
     def step(self, state, action, reward, next_state, done):
+        flattened_state = [item for sublist in state for item in sublist]
+        flattened_next_state = [item for sublist in next_state for item in sublist]
         for i, agent in enumerate(self.maddpg_agent):
-            agent.step(state[i], action[i], reward[i], next_state[i], done)
+            agent.step(flattened_state, action[i], reward[i], flattened_next_state, done)
 
     def act(self, obs_all_agents, noise=0.0):
         """get actions from all agents in the MADDPG object"""
-        actions = [agent.act(obs, noise) for agent, obs in zip(self.maddpg_agent, obs_all_agents)]
+        flattened_state = torch.Tensor([item for sublist in obs_all_agents for item in sublist])
+        actions = [agent.act(flattened_state, noise) for agent in self.maddpg_agent]
         return actions
 
 

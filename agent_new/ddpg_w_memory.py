@@ -35,7 +35,14 @@ class DDPG_Agent:
         print("Going to train on {}".format(DEVICE))
         print("Learning Rate:: Actor: {} | Critic: {}".format(LR_ACTOR, LR_CRITIC))
         print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(BUFFER_SIZE, BATCH_SIZE))
-    
+        print("")
+        print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, actor_hidden, action_size))
+        print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [critic_hidden[0] + action_size, *critic_hidden[1:]], 1))
+        #print(self.actor_local)
+        #print(self.critic_local)
+        print("")
+        print("")
+
     # def act(self, state):
     #     state = torch.from_numpy(state).float().to(DEVICE)
 
