@@ -1,6 +1,6 @@
 
 import gym
-import math
+from math import sqrt
 import random
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -10,6 +10,8 @@ from typing import List, Tuple
 import itertools
 from iteration_utilities import duplicates , unique_everseen
 from gym import spaces
+import matplotlib.pyplot as plt
+
 
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
@@ -62,7 +64,7 @@ def move(pos, action, prob = 1):
 def limit_to_size(pos, grid_size):
     return tuple(map(lambda x: max(min(x, grid_size - 1), 0), pos))
 
-class GridEnv(gym.Env):  
+class TwoDSurfaceEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
     def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1):
@@ -104,19 +106,16 @@ class GridEnv(gym.Env):
         return list(map(lambda inner_array: list(map(lambda x: x / 8, inner_array)), zipped))
 
     def render(self, mode='human', close=False):
-        annotated_grid = np.copy(self.grid)
-        for index, player in enumerate(self.players):
-            annotated_grid[player[1]][player[0]] = index + 1
-
-        for index, goal in enumerate(self.goals):
-            annotated_grid[goal[1]][goal[0]] = (index +1) * 10 + (index + 1)
-        return annotated_grid
+        print(self.players)
+        plt.plot(list(zip(*self.players)), '-')
+        plt.title("grid")
+        plt.show()
 
     
-env = GridEnv(1)
-print(env.render())
+env = TwoDSurfaceEnv(2)
+env.render()
 # print(env.players)
-print(env.step([1,Action.East]))
+print(env.step([[1,1],[1,2]]))
 # print(env.goals)
 print("----")
 print(env.players)
