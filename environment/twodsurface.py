@@ -17,10 +17,6 @@ def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def new_grid(size):
-    grid = np.zeros([size,size])
-    return grid
-
 def new_pos(existing, size):
     generated = (random.uniform(0.0, float(size)), random.uniform(0.0, float(size)))
     # if there are any duplicates, retry
@@ -98,7 +94,6 @@ class TwoDSurfaceEnv(gym.Env):
         return (states, rewards, done)
  
     def reset(self):
-        self.grid = new_grid(self.grid_size)
         self.players = unique([new_pos([], self.grid_size) for x in np.arange(self.num_agent)])
         self.goals = unique([new_pos(self.players, self.grid_size) for x in np.arange(self.num_agent)])
         # If we there are duplicate positions, retry
@@ -111,9 +106,6 @@ class TwoDSurfaceEnv(gym.Env):
         return list(map(lambda inner_array: list(map(lambda x: x / 8, inner_array)), zipped))
 
     def render(self, mode='human', close=False):
-        print(self.players)
-        print(self.goals)
-
         plt.scatter(list(zip(*self.players))[0], list(zip(*self.players))[1], c = 'blue')
         plt.scatter(list(zip(*self.goals))[0], list(zip(*self.goals))[1], c = 'red')
         plt.title("2D Surface")
