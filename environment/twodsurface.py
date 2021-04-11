@@ -35,12 +35,14 @@ def v_length(vec):
     return sqrt(vec[0]**2 + vec[1]**2)
 
 def v_subtract(lhs, rhs):
-    return (lhs[0] - lhs[1], rhs[0] - rhs[1])
+    return (lhs[0] - rhs[0], lhs[1] - rhs[1])
 
 def v_add(lhs, rhs):
-    return (lhs[0] + lhs[1], rhs[0] + rhs[1])
+    return (lhs[0] + rhs[0], lhs[1] + rhs[1])
 
 def v_within_range(vec1, vec2, radius):
+    print("distance")
+    print(v_length(v_subtract(vec1, vec2)))
     return v_length(v_subtract(vec1, vec2)) < radius
 
 def v_list_within_range(vecs, radius):
@@ -55,8 +57,6 @@ def rotate_origin_only(vec, radians):
     return (xx, yy)
 
 def move(pos, action, prob = 1):
-    print(action)
-    print(pos)
     if prob != 1:
         # add random rotation up to 1 radian and the original action vector, and sample with probabiliby `prob`
         possible_actions = [action, rotate_origin_only(action, random.uniform(0.0, 1.0))]
@@ -66,14 +66,15 @@ def move(pos, action, prob = 1):
     return v_add(pos, action)
 
 def limit_to_size(pos, grid_size):
-    return tuple(map(lambda x: max(min(x, grid_size - 1), 0), pos))
+    return tuple(map(lambda x: max(min(x, grid_size), 0), pos))
 
 class TwoDSurfaceEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, accepted_radius = 0.3):
         self.num_agent = num_agent
         self.grid_size = grid_size
+        self.accepted_radius = accepted_radius
         self.prob_right_direction = prob_right_direction
         self.reset()
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2, num_agent), dtype=np.float32)
@@ -84,11 +85,11 @@ class TwoDSurfaceEnv(gym.Env):
 
         states = self.get_state()
         # this has to be an area
-        is_at_goal = [v_within_range(player, goal, 0.05) for player, goal in zip(self.players, self.goals)]
+        is_at_goal = [v_within_range(player, goal, self.accepted_radius) for player, goal in zip(self.players, self.goals)]
         reward_is_at_goal = [-1 if x == False else 10 for x in is_at_goal]
         
         # detect a crash - if the agent is within radius
-        players_within_range = flatten(v_list_within_range(self.players, 0.05))
+        players_within_range = flatten(v_list_within_range(self.players, self.accepted_radius))
         # if a player's position appears twice, add -20 to the current reward
         reward_is_crash = [-19 if (player in players_within_range) else 0 for player in self.players]
         rewards = [a + b for a, b in zip(reward_is_at_goal, reward_is_crash)]
@@ -123,9 +124,3 @@ class TwoDSurfaceEnv(gym.Env):
         plt.show()
 
     
-# env = TwoDSurfaceEnv(2, 8, 0.1)
-# # print(env.players)
-# # print(env.goals)
-
-# # env.step([(1., 2.), (2.,2.)])
-# env.render()
