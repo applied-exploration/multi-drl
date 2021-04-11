@@ -14,9 +14,13 @@ class Actor(nn.Module):
     def __init__(self, state_space, action_space, random_seed = 32, hidden_layer_param = [400, 300] ):
         super(Actor, self).__init__()
 
-        self.fc_in = nn.Linear(state_space, hidden_layer_param[0])
-        self.hidden_layers = [nn.Linear(hidden_layer_param[i], hidden_layer_param[i+1]) for i in range(len(hidden_layer_param)-1)]
-        self.fc_out = nn.Linear(hidden_layer_param[-1], action_space)
+        new_hidden_layer_param = hidden_layer_param.copy()
+
+        self.fc_in = nn.Linear(state_space, new_hidden_layer_param[0])
+
+        self.hidden_layers = nn.ModuleList([nn.Linear(new_hidden_layer_param[i], new_hidden_layer_param[i+1]) for i in range(len(new_hidden_layer_param)-1)])
+
+        self.fc_out = nn.Linear(new_hidden_layer_param[-1], action_space)
 
         self.activation = F.relu
 
@@ -45,15 +49,17 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     def __init__(self, state_space, action_space, random_seed = 32, hidden_layer_param = [400, 300] ):
         super(Critic, self).__init__()
+        new_hidden_layer_param = hidden_layer_param.copy()
+        new_hidden_layer_param[0]+=action_space
 
         self.fc_in = nn.Linear(state_space, hidden_layer_param[0])
 
-        self.hidden_layers = [nn.Linear(hidden_layer_param[i], hidden_layer_param[i+1]) for i in range(len(hidden_layer_param)-1)]
-        self.hidden_layers[0] = nn.Linear(hidden_layer_param[0] + action_space, hidden_layer_param[1])
 
-        
+        self.hidden_layers = nn.ModuleList([nn.Linear(new_hidden_layer_param[i], new_hidden_layer_param[i+1]) for i in range(len(new_hidden_layer_param)-1)])
+
+
         # Critic throws back a single value (output = 1), which is the estimated value of the given state # 
-        self.fc_out = nn.Linear(hidden_layer_param[-1], 1)
+        self.fc_out = nn.Linear(new_hidden_layer_param[-1], 1)
 
         self.activation = F.relu
 

@@ -6,13 +6,14 @@ import copy                         # This is used for the mixing of target and 
 
 from constants import *             # Capital lettered variables are constants from the constants.py file
 
+from memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
 class DDPG_Agent:
-    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300], id=0, num_agent=1):
+    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300], id=0):
         super(DDPG_Agent, self).__init__()
 
 
@@ -24,17 +25,24 @@ class DDPG_Agent:
         self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
         self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC)
 
-
+        self.memory = ReplayBuffer(action_size, random_seed)
 
         self.seed = random.seed(random_seed)
         self.id=id
-
+        print(critic_hidden)
         print("")
         print("--- Agent {} Params ---".format(self.id))
         print("Going to train on {}".format(DEVICE))
         print("Learning Rate:: Actor: {} | Critic: {}".format(LR_ACTOR, LR_CRITIC))
         print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(BUFFER_SIZE, BATCH_SIZE))
-    
+        print("")
+        print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, actor_hidden, action_size))
+        print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [critic_hidden[0] + action_size, *critic_hidden[1:]], 1))
+        print(self.actor_local)
+        print(self.critic_local)
+        print("")
+        print("")
+
     # def act(self, state):
     #     state = torch.from_numpy(state).float().to(DEVICE)
 
@@ -52,15 +60,6 @@ class DDPG_Agent:
         self.actor_local.eval()
         with torch.no_grad():
             action = self.actor_local(obs) #+ noise*self.noise.noise()
-
-        return action
-
-    def target_act(self, obs, noise=0.0):
-        obs = obs.to(DEVICE)
-
-        self.actor_target.eval()
-        with torch.no_grad():
-            action = self.actor_target(obs) #+ noise*self.noise.noise()
 
         return action
 
