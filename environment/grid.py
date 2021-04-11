@@ -74,10 +74,16 @@ class GridEnv(gym.Env):
             print("Too many arguments for agent or goal, going to truncate")
             self.agents_start = self.agents_start[:self.num_agent]
             self.goals_start = self.goals_start[:self.num_agent]
-        if len(self.agents_start) > 0 and self.num_agent > len(self.agents_start): print("Not all agents have fixed starting positions, rest will be random")
-        if len(self.goals_start) > 0 and self.num_agent > len(self.goals_start): print("Not all goals have fixed starting positions, rest will be random")
+        if self.num_agent > len(self.agents_start): print("Not all _agents_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.agents_start)))
+        if self.num_agent > len(self.goals_start): print("Not all _goals_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.goals_start)))
 
         self.reset()
+        
+        print("")
+        print("Final Self players: ", self.players)
+        print("Final Self goals: ", self.goals)
+        
+        
 
     def step(self, actions):
         self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]
@@ -97,14 +103,14 @@ class GridEnv(gym.Env):
  
     def reset(self):
         self.grid = new_grid(self.grid_size)
-        self.players = [*(agent_start for agent_start in self.agents_start), *unique([new_pos([], self.grid_size) for x in np.arange(self.num_agent-len(self.agents_start))])] 
-        self.goals = [*(goal_start for goal_start in self.goals_start), *unique([new_pos(self.players, self.grid_size) for x in np.arange(self.num_agent-len(self.goals_start))])] 
-        print("Self players: ", self.players)
-        print("Self goals: ", self.goals)
+        self.players = [*self.agents_start, *unique([new_pos([], self.grid_size) for x in np.arange(self.num_agent-len(self.agents_start))])] 
+        self.goals = [*self.goals_start, *unique([new_pos(self.players, self.grid_size) for x in np.arange(self.num_agent-len(self.goals_start))])] 
+        
         
         # If we there are duplicate positions, retry
         if len(self.players) != self.num_agent or len(self.goals) != self.num_agent:
             return self.reset()
+
         return self.get_state()
 
     def get_state(self):
