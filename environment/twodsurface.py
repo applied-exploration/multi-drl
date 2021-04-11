@@ -1,6 +1,6 @@
 
 import gym
-from math import sqrt
+from math import sqrt, cos, sin
 import random
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -48,16 +48,20 @@ def v_list_within_range(vecs, radius):
     return list(filter(None, pairs_within_range))
 
 def rotate_origin_only(vec, radians):
-    x, y = xy
-    xx = x * math.cos(radians) + y * math.sin(radians)
-    yy = -x * math.sin(radians) + y * math.cos(radians)
+    x, y = vec
+    xx = x * cos(radians) + y * sin(radians)
+    yy = -x * sin(radians) + y * cos(radians)
 
-    return xx, yy
+    return (xx, yy)
 
 def move(pos, action, prob = 1):
+    print(action)
+    print(pos)
     if prob != 1:
         # add random rotation up to 1 radian and the original action vector, and sample with probabiliby `prob`
-        action = np.random.choice([action, rotate_origin_only(action, random.uniform(0.0, 1.0))], 1, p=[prob, 1 - prob])
+        possible_actions = [action, rotate_origin_only(action, random.uniform(0.0, 1.0))]
+        rand_choice = np.random.choice(len(possible_actions), 1, p=[prob, 1 - prob])[0]
+        action = possible_actions[rand_choice]
 
     return v_add(pos, action)
 
@@ -86,7 +90,7 @@ class TwoDSurfaceEnv(gym.Env):
         # detect a crash - if the agent is within radius
         players_within_range = flatten(v_list_within_range(self.players, 0.05))
         # if a player's position appears twice, add -20 to the current reward
-        reward_is_crash = [-19 if (player in dup) else 0 for player in self.players]
+        reward_is_crash = [-19 if (player in players_within_range) else 0 for player in self.players]
         rewards = [a + b for a, b in zip(reward_is_at_goal, reward_is_crash)]
 
         done = True in is_at_goal 
@@ -107,16 +111,21 @@ class TwoDSurfaceEnv(gym.Env):
 
     def render(self, mode='human', close=False):
         print(self.players)
-        plt.plot(list(zip(*self.players)), '-')
-        plt.title("grid")
+        print(self.goals)
+
+        plt.scatter(list(zip(*self.players))[0], list(zip(*self.players))[1], c = 'blue')
+        plt.scatter(list(zip(*self.goals))[0], list(zip(*self.goals))[1], c = 'red')
+        plt.title("2D Surface")
+
+        axis = plt.gca()
+        axis.set_xlim(0, self.grid_size)
+        axis.set_ylim(0, self.grid_size)
         plt.show()
 
     
-env = TwoDSurfaceEnv(2)
-env.render()
-# print(env.players)
-print(env.step([[1,1],[1,2]]))
-# print(env.goals)
-print("----")
-print(env.players)
-print(env.goals)
+# env = TwoDSurfaceEnv(2, 8, 0.1)
+# # print(env.players)
+# # print(env.goals)
+
+# # env.step([(1., 2.), (2.,2.)])
+# env.render()
