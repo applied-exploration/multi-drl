@@ -1,5 +1,5 @@
 ## Deep Deterministic Policy Gradients ##
-from policy import Actor, Critic    # These are our models
+from model import Actor, Critic    # These are our models
 import numpy as np
 import random                       # Used for random seed
 import copy                         # This is used for the mixing of target and local model parameters
