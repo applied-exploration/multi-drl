@@ -29,7 +29,7 @@ class DDPG_Agent:
 
         self.seed = random.seed(random_seed)
         self.id=id
-
+        print(critic_hidden)
         print("")
         print("--- Agent {} Params ---".format(self.id))
         print("Going to train on {}".format(DEVICE))
@@ -38,8 +38,8 @@ class DDPG_Agent:
         print("")
         print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, actor_hidden, action_size))
         print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [critic_hidden[0] + action_size, *critic_hidden[1:]], 1))
-        #print(self.actor_local)
-        #print(self.critic_local)
+        print(self.actor_local)
+        print(self.critic_local)
         print("")
         print("")
 

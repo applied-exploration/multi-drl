@@ -12,11 +12,11 @@ from constants import *
 
 
 class MADDPG:
-    def __init__(self, state_size, action_size, random_seed=32, num_agent = 2):
+    def __init__(self, state_size, action_size, random_seed=32, num_agent = 2, actor_hidden=[128, 64], critic_hidden=[128, 64]):
         super(MADDPG, self).__init__()
 
         # critic input = obs_full + actions = 14+2+2+2=20
-        self.maddpg_agent = [DDPG_Agent(state_size, action_size, random_seed, actor_hidden=[128, 64], critic_hidden=[128, 64], id=i) for i in range(num_agent)]
+        self.maddpg_agent = [DDPG_Agent(state_size, action_size, random_seed, actor_hidden=actor_hidden, critic_hidden=critic_hidden, id=i) for i in range(num_agent)]
 
         
         #state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300]
