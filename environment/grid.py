@@ -9,6 +9,7 @@ import numpy as np
 from typing import List, Tuple
 import itertools
 from iteration_utilities import duplicates , unique_everseen
+import math
 from utilities.helper import unique, flatten
 
 
@@ -55,12 +56,22 @@ def move(pos, action, prob = 1):
 def limit_to_size(pos, grid_size):
     return tuple(map(lambda x: max(min(x, grid_size - 1), 0), pos))
 
+
+def view_on_grid(grid, pos, view_size):
+    padding = math.floor(view_size / 2)
+    padded = np.pad(grid, padding, mode='constant', constant_values=-1)
+    x, y = pos[0] - view_size, pos[1] - view_size
+    return grid[x:x+view_size, y:y+view_size]
+
+
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, fixed_start = False, fixed_goals = False, agents_fully_observable = False, render_board = False):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, fixed_start = False, fixed_goals = False, agents_fully_observable = False, grid_observation=False, render_board = False):
         self.num_agent = num_agent
         self.grid_size = grid_size
+        self.grid_observation = grid_observation
+        self.limited_visibility_size = limited_visibility_size
         self.prob_right_direction = prob_right_direction
         self.action_space = spaces.Discrete(4)
         if agents_fully_observable == True:
@@ -140,14 +151,23 @@ class GridEnv(gym.Env):
         else:
             return [flatten(players_goals) for i in range(self.num_agent)]
 
+        # if self.grid_observation == True:
+        #     grids = [self.__get_grid(limit_observation_space = True, index) for player_pos in self.players]
+            
 
-    def render(self, mode='human', close=False):
+
+    def __get_grid(self, limit_observation_space, player_position):
         annotated_grid = np.copy(self.grid)
         for index, player in enumerate(self.players):
             annotated_grid[player[1]][player[0]] = index + 1
 
         for index, goal in enumerate(self.goals):
             annotated_grid[goal[1]][goal[0]] = (index +1) * 10 + (index + 1)
+
+        if limit_observation_space == True and player_position != None:
+             player_position
+
         return annotated_grid
 
-    
+    def render(self, mode='human', close=False):
+        return self.__get_grid(limit_observation_space = False)
