@@ -90,7 +90,7 @@ class GridEnv(gym.Env):
 
         states = self.get_state()
         is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
-        reward_is_at_goal = [-1 if x == False else 10 for x in is_at_goal]
+        reward_is_at_goal = [-1 if x == False else 20 for x in is_at_goal]
         
         # detect a crash
         dup = list(unique_everseen(duplicates(self.players)))
