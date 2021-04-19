@@ -5,7 +5,7 @@ from collections import namedtuple, deque
 import sys, os
 sys.path.append(os.path.abspath('..'))
 
-from model import QNetwork
+from .model import QNetwork
 from abstract_agent import Agent
 from utils import flatten
 

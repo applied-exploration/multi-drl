@@ -1,4 +1,3 @@
-from model import Model
 import numpy as np
 import random
 from collections import namedtuple, deque
@@ -7,7 +6,7 @@ import sys, os
 sys.path.append(os.path.abspath('..'))
 from abstract_agent import Agent
 
-from model import Model
+from .model import Model
 
 import torch
 import torch.nn.functional as F
