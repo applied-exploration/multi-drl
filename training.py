@@ -8,12 +8,10 @@ from utils import flatten
 env = GridEnv(1, agents_start = [(1,1)], goals_start=[(7,7)])
 agents = [DeepQAgent(env.state_space, env.action_space.n)]
 
-score_history = []
 
 def train(agents, env, max_t=100, num_episodes = 100, scores_window=100, flatten_state=False):
-
-    print("Continuing training -> initial Score History length: ", len(score_history))
     
+    score_history = []
     scores_deque = deque(score_history[-scores_window:], maxlen=scores_window)
     last_running_mean = float('-inf')
 
@@ -40,7 +38,6 @@ def train(agents, env, max_t=100, num_episodes = 100, scores_window=100, flatten
             states = next_states
             if done == True:
                 break
-        print(scores.shape)
         returns_in_episode = np.mean(scores)
         scores_deque.append(returns_in_episode)
         score_history.append(returns_in_episode)
@@ -56,4 +53,4 @@ def train(agents, env, max_t=100, num_episodes = 100, scores_window=100, flatten
 
     return score_history
 
-train(agents, env)
+# train(agents, env)
