@@ -8,9 +8,7 @@ import numpy as np
 from typing import List, Tuple
 import itertools
 from iteration_utilities import duplicates , unique_everseen
-
-def flatten(list_of_lists):
-    return [item for sublist in list_of_lists for item in sublist]
+from utils import unique, flatten
 
 
 def new_grid(size):
@@ -24,8 +22,6 @@ def new_pos(existing, size):
         return new_pos(existing, size)
     return generated
 
-def unique(a):
-    return list(set(a))
 
 class Action(IntEnum):
     North = 0
@@ -127,11 +123,3 @@ class GridEnv(gym.Env):
         return annotated_grid
 
     
-env = GridEnv(1)
-print(env.render())
-# print(env.players)
-print(env.step([1,Action.East]))
-# print(env.goals)
-print("----")
-print(env.players)
-print(env.goals)

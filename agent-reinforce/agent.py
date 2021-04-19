@@ -3,6 +3,10 @@ import numpy as np
 import random
 from collections import namedtuple, deque
 
+import sys, os
+sys.path.append(os.path.abspath('..'))
+from abstract_agent import Agent
+
 from model import Model
 
 import torch
@@ -14,7 +18,7 @@ LR = 5e-4               # learning rate
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-class Agent():
+class REINFORCEAgent(Agent):
     """Interacts with and learns from the environment."""
 
     def __init__(self, state_size, action_size, seed = 1):
@@ -50,3 +54,6 @@ class Agent():
         self.optimizer.zero_grad()
         policy_loss.backward()
         self.optimizer.step()
+
+    def reset(self):
+        pass

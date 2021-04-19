@@ -11,10 +11,7 @@ import itertools
 from iteration_utilities import duplicates , unique_everseen
 from gym import spaces
 import matplotlib.pyplot as plt
-
-
-def flatten(list_of_lists):
-    return [item for sublist in list_of_lists for item in sublist]
+from utils import flatten, unique
 
 
 def new_pos(existing, size):
@@ -24,8 +21,7 @@ def new_pos(existing, size):
         return new_pos(existing, size)
     return generated
 
-def unique(a):
-    return list(set(a))
+
 
 def v_length(vec):
     return sqrt(vec[0]**2 + vec[1]**2)

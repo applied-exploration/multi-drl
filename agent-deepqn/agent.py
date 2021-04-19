@@ -2,7 +2,12 @@ import numpy as np
 import random
 from collections import namedtuple, deque
 
+import sys, os
+sys.path.append(os.path.abspath('..'))
+
 from model import QNetwork
+from abstract_agent import Agent
+from utils import flatten
 
 import torch
 import torch.nn.functional as F
@@ -17,7 +22,7 @@ UPDATE_EVERY = 4        # how often to update the network
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-class Agent():
+class DeepQAgent(Agent):
     """Interacts with and learns from the environment."""
 
     def __init__(self, state_size, action_size, seed, samp_frames=1):
@@ -117,6 +122,10 @@ class Agent():
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
 
 
+    def reset(self):
+        pass
+
+
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
 
@@ -142,8 +151,6 @@ class ReplayBuffer:
         e = self.experience(state, action, reward, next_state, done)
         self.memory.append(e)
     
-    def flatten(self, inputlist):
-        return [item for sublist in inputlist for item in sublist]
 
     def sample(self):
         """Randomly sample a batch of experiences from memory."""
@@ -151,11 +158,11 @@ class ReplayBuffer:
         if self.samp_frames > 1:
             experience_ids = random.sample(np.arange(0,len(self.memory)-1,1).tolist(), k=int(self.batch_size/self.samp_frames))
 
-            states = torch.from_numpy(np.vstack([self.flatten([self.memory[i].state, self.memory[i+1].state]) for i in experience_ids if self.memory[i] is not None])).float().to(device)
+            states = torch.from_numpy(np.vstack([flatten([self.memory[i].state, self.memory[i+1].state]) for i in experience_ids if self.memory[i] is not None])).float().to(device)
             actions = torch.from_numpy(np.vstack([self.memory[i].action for i in experience_ids if self.memory[i] is not None])).long().to(device)
             rewards = torch.from_numpy(np.vstack([np.mean([self.memory[i].reward, self.memory[i+1].reward]) for i in experience_ids if self.memory[i] is not None])).float().to(device)
             # rewards = torch.from_numpy(np.vstack([np.sum([self.memory[i].reward, self.memory[i+1].reward]) for i in experience_ids if self.memory[i] is not None])).float().to(device)
-            next_states = torch.from_numpy(np.vstack([self.flatten([self.memory[i].next_state, self.memory[i+1].next_state]) for i in experience_ids if self.memory[i] is not None])).float().to(device)
+            next_states = torch.from_numpy(np.vstack([flatten([self.memory[i].next_state, self.memory[i+1].next_state]) for i in experience_ids if self.memory[i] is not None])).float().to(device)
             dones = torch.from_numpy(np.vstack([self.memory[i].done for i in experience_ids if self.memory[i] is not None]).astype(np.uint8)).float().to(device)
 
         else:
