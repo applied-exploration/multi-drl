@@ -12,7 +12,11 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-class DDPG_Agent():
+import sys, os
+sys.path.append(os.path.abspath('..'))
+from abstract_agent import Agent 
+
+class DDPG_Agent(Agent):
     def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300]):
         super(DDPG_Agent, self).__init__()
 
