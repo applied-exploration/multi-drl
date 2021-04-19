@@ -25,7 +25,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class DeepQAgent(Agent):
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, seed, samp_frames=1):
+    def __init__(self, state_size, action_size, seed = 1, samp_frames=1):
         """Initialize an Agent object.
         
         Params
