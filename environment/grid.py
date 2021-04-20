@@ -8,7 +8,7 @@ import numpy as np
 from typing import List, Tuple
 import itertools
 from iteration_utilities import duplicates , unique_everseen
-from utils import unique, flatten
+from utilities.helper import unique, flatten
 
 
 def new_grid(size):
@@ -57,7 +57,7 @@ def limit_to_size(pos, grid_size):
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, agents_start = [], goals_start=[]):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, agents_start = [], goals_start=[], render_board = False):
         self.num_agent = num_agent
         self.grid_size = grid_size
         self.prob_right_direction = prob_right_direction
@@ -65,6 +65,7 @@ class GridEnv(gym.Env):
         self.state_space = num_agent * 4
         self.agents_start = agents_start
         self.goals_start = goals_start
+        self.render_board = render_board
 
         if len(self.agents_start) > num_agent or len(self.goals_start) > num_agent: 
             print("Too many arguments for agent or goal, going to truncate")
@@ -95,6 +96,9 @@ class GridEnv(gym.Env):
         rewards = [a + b for a, b in zip(reward_is_at_goal, reward_is_crash)]
 
         done = True in is_at_goal 
+
+        if self.render_board:
+            print("{}".format(self.render()))
         return (states, rewards, done)
  
     def reset(self):

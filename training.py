@@ -3,10 +3,10 @@ from agent_deepqn.agent import DeepQAgent
 from environment.grid import GridEnv
 from collections import deque
 import numpy as np
-from utils import flatten
+from utilities.helper import flatten
 
-env = GridEnv(1, agents_start = [(1,1)], goals_start=[(7,7)])
-agents = [DeepQAgent(env.state_space, env.action_space.n)]
+# env = GridEnv(1, agents_start = [(1,1)], goals_start=[(7,7)])
+# agents = [DeepQAgent(env.state_space, env.action_space.n)]
 
 
 def train(agents, env, max_t=100, num_episodes = 100, scores_window=100, flatten_state=False):
@@ -18,7 +18,7 @@ def train(agents, env, max_t=100, num_episodes = 100, scores_window=100, flatten
     for episode in range(num_episodes):
         states = env.reset()
         [agent.reset() for agent in agents]
-        scores = np.zeros(env.num_agent)
+        scores = np.zeros(len(agents))
 
         for i in range(max_t):
             actions = []
@@ -26,6 +26,7 @@ def train(agents, env, max_t=100, num_episodes = 100, scores_window=100, flatten
                 actions = [agent.act(flatten(states)) for agent in agents]
             else:
                 actions = [agent.act(state) for agent, state in zip(agents, states)]
+            
             next_states, rewards, done = env.step(actions)
 
             if flatten_state == True:

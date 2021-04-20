@@ -1,12 +1,13 @@
 ## Deep Deterministic Policy Gradients ##
-from a_model import Actor, Critic    # These are our models
+from .model import Actor, Critic    # These are our models
 # from model_provided import Actor, Critic    # These are our models
 import numpy as np
 import random                       # Used for random seed
 import copy                         # This is used for the mixing of target and local model parameters
 
-from constants import *             # Capital lettered variables are constants from the constants.py file
-from a_memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
+# from .constants import *             # Capital lettered variables are constants from the constants.py file
+from .memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
+from .constants import DDPG_AgentConfig
 
 import torch
 import torch.nn.functional as F
@@ -14,35 +15,43 @@ import torch.optim as optim
 
 import sys, os
 sys.path.append(os.path.abspath('..'))
-from abstract_agent import Agent 
+
+from abstract_agent import Agent
+
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")     # Training on GPU or CPU
 
 class DDPG_Agent(Agent):
-    def __init__(self, state_size, action_size, random_seed, config = DDPG_AgentConfig(), actor_hidden= [400, 300], critic_hidden = [400, 300]):
+    def __init__(self, state_size, action_size, seed = 1, config = DDPG_AgentConfig()):
         super(DDPG_Agent, self).__init__()
 
         self.config = config
-        self.seed = random.seed(random_seed)
+        self.seed = random.seed(seed)
 
         # self.actor_local = Actor(state_size, action_size, random_seed).to(DEVICE)
         # self.actor_target = Actor(state_size, action_size, random_seed).to(DEVICE)
         # self.critic_local = Critic(state_size, action_size, random_seed).to(DEVICE)
         # self.critic_target = Critic(state_size, action_size, random_seed).to(DEVICE)
-        self.actor_local = Actor(state_size, action_size, random_seed, hidden_layer_param=actor_hidden).to(DEVICE)
-        self.actor_target = Actor(state_size, action_size, random_seed, hidden_layer_param=actor_hidden).to(DEVICE)
-        self.critic_local = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
-        self.critic_target = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
+        self.actor_local = Actor(state_size, action_size, seed, hidden_layer_param=self.config.ACTOR_H, output_type=self.config.OUTPUT_TYPE).to(DEVICE)
+        self.actor_target = Actor(state_size, action_size, seed, hidden_layer_param=self.config.ACTOR_H, output_type=self.config.OUTPUT_TYPE).to(DEVICE)
+        self.critic_local = Critic(state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
+        self.critic_target = Critic(state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
 
         self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=self.config.LR_ACTOR)
         self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=self.config.LR_CRITIC, weight_decay=self.config.WEIGHT_DECAY)
         
         # Noise process
-        self.noise = OUNoise(action_size, random_seed, self.config.MU, self.config.THETA, self.config.SIGMA)
+        self.noise = OUNoise(action_size, seed, self.config.MU, self.config.THETA, self.config.SIGMA)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, random_seed, self.config.BATCH_SIZE, self.config.BUFFER_SIZE)
+        self.memory = ReplayBuffer(action_size, seed, self.config.BATCH_SIZE, self.config.BUFFER_SIZE)
 
         self.soft_update(self.critic_local, self.critic_target, 1) 
         self.soft_update(self.actor_local, self.actor_target, 1) 
+
+        # What the policy is tuned for
+        self.output_type = self.config.OUTPUT_TYPE
+
+        self.last_action_probs = np.full(shape=action_size,  fill_value=1/action_size,  dtype=np.float)
 
         print("")
         print("--- Agent Params ---")
@@ -50,10 +59,11 @@ class DDPG_Agent(Agent):
         print("Learning Rate:: Actor: {} | Critic: {}".format(self.config.LR_ACTOR, self.config.LR_CRITIC))
         print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(self.config.BUFFER_SIZE, self.config.BATCH_SIZE))
         print("")
-        print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, actor_hidden, action_size))
-        print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [critic_hidden[0] + action_size, *critic_hidden[1:]], 1))
+        print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, self.config.ACTOR_H, action_size))
+        print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [self.config.CRITIC_H[0] + action_size, *self.config.CRITIC_H[1:]], 1))
         print(self.actor_local)
         print(self.critic_local)
+        print("Output type is: {}".format(self.output_type))
         print("")
         print("")
 
@@ -62,6 +72,9 @@ class DDPG_Agent(Agent):
         self.noise.reset()
     
     def act(self, state, add_noise=True):
+        if type(state) is not np.ndarray:
+            state = np.array(state)
+
         state = torch.from_numpy(state).float().to(DEVICE)
         # action_probs = self.actor_local(state)
         # print(action_probs)
@@ -70,14 +83,27 @@ class DDPG_Agent(Agent):
         with torch.no_grad():
             actions = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
-        if add_noise:
-            actions += self.noise.sample()
 
-        return np.clip(actions, -1, 1)
+
+        if self.output_type is 'probs':
+            self.last_action_probs = actions.copy()
+
+            chosen_action = np.random.choice(len(actions), p=actions)
+            # print("action_prob: {}".format(actions))
+            # print("chosen_action: {}".format(chosen_action))
+            return chosen_action
+
+        elif self.output_type is 'vectors':
+            if add_noise:
+                actions += self.noise.sample()
+            return np.clip(actions, -1, 1)
     
     def step(self, state, action, reward, next_state, done):
         # Save experience / reward
-        self.memory.add(state, action, reward, next_state, done)
+        if self.output_type is 'probs':
+            self.memory.add(state, self.last_action_probs, reward, next_state, done)
+        elif self.output_type is 'vectors':
+            self.memory.add(state, action, reward, next_state, done)
 
         # Learn, if enough samples are available in memory
         if len(self.memory) > self.config.BATCH_SIZE:
@@ -86,18 +112,18 @@ class DDPG_Agent(Agent):
 
     def learn(self, experiences):
 
-        states, actions, rewards, next_states, dones = experiences
- 
-
+        states, actions, rewards, next_states, dones = experiences # these come as tensors
+        
         # ---                   Teach Critic (with TD)              --- #
         recommended_actions = self.actor_target(next_states)
         Q_targets_next = self.critic_target(next_states, recommended_actions)
         Q_targets = rewards + (self.config.GAMMA * Q_targets_next * (1 - dones))                 # This is what we actually got from experience
         Q_expected = self.critic_local(states, actions)                       # This is what we thought the expected return of that state-action is.
-        critic_loss = CRITERION(Q_targets, Q_expected)
+        critic_loss = F.mse_loss(Q_targets, Q_expected)
 
         self.critic_opt.zero_grad()
         critic_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 1)
         self.critic_opt.step()
 
 

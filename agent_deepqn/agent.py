@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath('..'))
 
 from .model import QNetwork
 from abstract_agent import Agent
-from utils import flatten
+from utilities.helper import flatten
 
 import torch
 import torch.nn.functional as F

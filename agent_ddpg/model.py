@@ -11,22 +11,33 @@ def hidden_init(layer):
     return (-lim, lim)
 
 class Actor(nn.Module):
-    def __init__(self, state_space, action_space, random_seed = 32, hidden_layer_param = [400, 300] ):
+    def __init__(self, state_space, action_space, random_seed = 32, hidden_layer_param = [400, 300], output_type='probs' ):
         super(Actor, self).__init__()
         self.seed = torch.manual_seed(random_seed)
 
         new_hidden_layer_param = hidden_layer_param.copy()
+
+        # --- Input layer --- #
         self.fc_in = nn.Linear(state_space, new_hidden_layer_param[0])
 
+        # --- Hidden layers --- #
         if len(new_hidden_layer_param) < 2: self.hidden_layers = []
         else: self.hidden_layers = nn.ModuleList([nn.Linear(new_hidden_layer_param[i], new_hidden_layer_param[i+1]) for i in range(len(new_hidden_layer_param)-1)])
         
+        # --- Output layer --- #
         self.fc_out = nn.Linear(new_hidden_layer_param[-1], action_space)
-
-        self.activation = F.relu
-
         
-        self.reset_parameters()
+        # --- Activation and Output functions --- #
+        self.activation = F.relu
+        self.output_type = output_type
+        
+        self.output_calc = F.softmax
+        if self.output_type is 'probs':
+            self.output_calc = F.softmax
+        elif self.output_type is 'vectors':
+            self.output_calc = torch.tanh
+    
+        # self.reset_parameters()
 
     def reset_parameters(self):
         self.fc_in.weight.data.uniform_(*hidden_init(self.fc_in))
@@ -42,26 +53,34 @@ class Actor(nn.Module):
 
         x = self.fc_out(x)
 
-        return torch.tanh(x)
+        return self.output_calc(x)
+       
+        
 
 class Critic(nn.Module):
     def __init__(self, state_space, action_space, random_seed = 32, hidden_layer_param = [400, 300] ):
         super(Critic, self).__init__()
         self.seed = torch.manual_seed(random_seed)
 
+        # We need to copy the values, as this object has also been passed to another network (critic and target)
         new_hidden_layer_param = hidden_layer_param.copy()
+
+        # --- Input layer --- #
         self.fc_in = nn.Linear(state_space, new_hidden_layer_param[0])
 
-        new_hidden_layer_param[0]+=action_space # this has to be under fc_in
-        
+        # --- Hidden layers --- #
+        new_hidden_layer_param[0] += action_space # this has to be under fc_in
         if len(new_hidden_layer_param) < 2: self.hidden_layers = []
         else: self.hidden_layers = nn.ModuleList([nn.Linear(new_hidden_layer_param[i], new_hidden_layer_param[i+1]) for i in range(len(new_hidden_layer_param)-1)])
+        
+        # --- Output layer --- #
         # Critic throws back a single value (output = 1), which is the estimated value of the given state # 
         self.fc_out = nn.Linear(new_hidden_layer_param[-1], 1)
 
+        # --- Activation and Output functions --- #
         self.activation = F.relu
 
-        self.reset_parameters()
+        # self.reset_parameters()
 
     def reset_parameters(self):
         self.fc_in.weight.data.uniform_(*hidden_init(self.fc_in))
