@@ -12,17 +12,17 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 class DDPG_Agent:
-    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300], id=0, num_agent=1):
+    def __init__(self, state_size, action_size, random_seed, config = DDPGAgentConfig(), actor_hidden= [400, 300], critic_hidden = [400, 300], id=0, num_agent=1):
         super(DDPG_Agent, self).__init__()
-
+        self.config = config
 
         self.actor_local = Actor(state_size, action_size, random_seed, hidden_layer_param=actor_hidden).to(DEVICE)
         self.actor_target = Actor(state_size, action_size, random_seed, hidden_layer_param=actor_hidden).to(DEVICE)
         self.critic_local = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
         self.critic_target = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
 
-        self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
-        self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC)
+        self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=self.config.LR_ACTOR)
+        self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=self.config.LR_CRITIC)
 
 
 
@@ -32,8 +32,8 @@ class DDPG_Agent:
         print("")
         print("--- Agent {} Params ---".format(self.id))
         print("Going to train on {}".format(DEVICE))
-        print("Learning Rate:: Actor: {} | Critic: {}".format(LR_ACTOR, LR_CRITIC))
-        print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(BUFFER_SIZE, BATCH_SIZE))
+        print("Learning Rate:: Actor: {} | Critic: {}".format(self.config.LR_ACTOR, self.config.LR_CRITIC))
+        print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(self.config.BUFFER_SIZE, self.config.BATCH_SIZE))
     
     # def act(self, state):
     #     state = torch.from_numpy(state).float().to(DEVICE)
@@ -70,7 +70,7 @@ class DDPG_Agent:
         self.memory.add(state, action, reward, next_state, done)
 
         # Learn, if enough samples are available in memory
-        if len(self.memory) > BATCH_SIZE:
+        if len(self.memory) > self.config.BATCH_SIZE:
             experiences = self.memory.sample()
             self.learn(experiences)
 
@@ -82,7 +82,7 @@ class DDPG_Agent:
         # ---                   Teach Critic (with TD)              --- #
         recommended_actions = self.actor_target(next_states)
         Q_nexts = self.critic_target(next_states, recommended_actions)
-        Q_targets = (rewards + GAMMA * Q_nexts * (1 - dones))                 # This is what we actually got from experience
+        Q_targets = (rewards + self.config.GAMMA * Q_nexts * (1 - dones))                 # This is what we actually got from experience
         Q_expected = self.critic_local(states, actions)                       # This is what we thought the expected return of that state-action is.
         critic_loss = CRITERION(Q_targets, Q_expected)
 
@@ -119,5 +119,5 @@ class DDPG_Agent:
                 tau (float): interpolation parameter 
         """
         for target_param, local_param in zip(target.parameters(), local.parameters()):
-            target_param.data.copy_(TAU*local_param.data + (1.0-TAU)*target_param.data)
+            target_param.data.copy_(self.config.TAU*local_param.data + (1.0-self.config.TAU)*target_param.data)
 

@@ -12,7 +12,9 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-LR = 5e-4               # learning rate 
+
+class REINFORCEAgentConfig:
+    LR = 5e-4               # learning rate 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -20,7 +22,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class REINFORCEAgent(Agent):
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, seed = 1):
+    def __init__(self, state_size, action_size, config = REINFORCEAgentConfig(), seed = 1):
         """Initialize an Agent object.
         
         Params
@@ -32,9 +34,10 @@ class REINFORCEAgent(Agent):
         self.state_size = state_size
         self.action_size = action_size
         self.seed = random.seed(seed)
+        self.config = config
 
         self.model = Model(state_size, action_size).to(device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=LR)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.LR)
     
 
 
