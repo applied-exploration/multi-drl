@@ -17,9 +17,10 @@ sys.path.append(os.path.abspath('..'))
 from abstract_agent import Agent 
 
 class DDPG_Agent(Agent):
-    def __init__(self, state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300]):
+    def __init__(self, state_size, action_size, random_seed, config = DDPG_AgentConfig(), actor_hidden= [400, 300], critic_hidden = [400, 300]):
         super(DDPG_Agent, self).__init__()
 
+        self.config = config
         self.seed = random.seed(random_seed)
 
         # self.actor_local = Actor(state_size, action_size, random_seed).to(DEVICE)
@@ -31,14 +32,14 @@ class DDPG_Agent(Agent):
         self.critic_local = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
         self.critic_target = Critic(state_size, action_size, random_seed, hidden_layer_param=critic_hidden).to(DEVICE)
 
-        self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
-        self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
+        self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=self.config.LR_ACTOR)
+        self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=self.config.LR_CRITIC, weight_decay=self.config.WEIGHT_DECAY)
         
         # Noise process
-        self.noise = OUNoise(action_size, random_seed, MU, THETA, SIGMA)
+        self.noise = OUNoise(action_size, random_seed, self.config.MU, self.config.THETA, self.config.SIGMA)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, random_seed)
+        self.memory = ReplayBuffer(action_size, random_seed, self.config.BATCH_SIZE, self.config.BUFFER_SIZE)
 
         self.soft_update(self.critic_local, self.critic_target, 1) 
         self.soft_update(self.actor_local, self.actor_target, 1) 
@@ -46,8 +47,8 @@ class DDPG_Agent(Agent):
         print("")
         print("--- Agent Params ---")
         print("Going to train on {}".format(DEVICE))
-        print("Learning Rate:: Actor: {} | Critic: {}".format(LR_ACTOR, LR_CRITIC))
-        print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(BUFFER_SIZE, BATCH_SIZE))
+        print("Learning Rate:: Actor: {} | Critic: {}".format(self.config.LR_ACTOR, self.config.LR_CRITIC))
+        print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(self.config.BUFFER_SIZE, self.config.BATCH_SIZE))
         print("")
         print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, actor_hidden, action_size))
         print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [critic_hidden[0] + action_size, *critic_hidden[1:]], 1))
@@ -79,7 +80,7 @@ class DDPG_Agent(Agent):
         self.memory.add(state, action, reward, next_state, done)
 
         # Learn, if enough samples are available in memory
-        if len(self.memory) > BATCH_SIZE:
+        if len(self.memory) > self.config.BATCH_SIZE:
             experiences = self.memory.sample()
             self.learn(experiences)
 
@@ -91,7 +92,7 @@ class DDPG_Agent(Agent):
         # ---                   Teach Critic (with TD)              --- #
         recommended_actions = self.actor_target(next_states)
         Q_targets_next = self.critic_target(next_states, recommended_actions)
-        Q_targets = rewards + (GAMMA * Q_targets_next * (1 - dones))                 # This is what we actually got from experience
+        Q_targets = rewards + (self.config.GAMMA * Q_targets_next * (1 - dones))                 # This is what we actually got from experience
         Q_expected = self.critic_local(states, actions)                       # This is what we thought the expected return of that state-action is.
         critic_loss = CRITERION(Q_targets, Q_expected)
 
@@ -114,8 +115,8 @@ class DDPG_Agent(Agent):
 
 
         # Mix model parameters in both Actor and Critic #
-        self.soft_update(self.critic_local, self.critic_target, TAU) 
-        self.soft_update(self.actor_local, self.actor_target, TAU) 
+        self.soft_update(self.critic_local, self.critic_target, self.config.TAU) 
+        self.soft_update(self.actor_local, self.actor_target, self.config.TAU) 
     
     def soft_update(self, local, target, tau):
         """Soft update model parameters.
