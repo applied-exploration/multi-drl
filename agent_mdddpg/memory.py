@@ -12,7 +12,7 @@ from constants import *
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, action_size, seed):
+    def __init__(self, action_size, seed, buffer_size, batch_size):
         """Initialize a ReplayBuffer object.
         Params
         ======
@@ -20,8 +20,9 @@ class ReplayBuffer:
             batch_size (int): size of each training batch
         """
         self.action_size = action_size
-        self.memory = deque(maxlen=BUFFER_SIZE)  # internal memory (deque)
-        self.batch_size = BATCH_SIZE
+        self.buffer_size = buffer_size
+        self.memory = deque(maxlen=buffer_size)  # internal memory (deque)
+        self.batch_size = batch_size
         self.experience = namedtuple("Experience", field_names=["state", "state_full", "action", "reward", "next_state", "next_state_full", "done"])
 
         self.seed = random.seed(seed)
@@ -33,7 +34,7 @@ class ReplayBuffer:
         self.memory.append(e)
     
     def reset(self):
-        self.memory = deque(maxlen=BUFFER_SIZE)  # internal memory (deque)
+        self.memory = deque(maxlen=self.buffer_size)  # internal memory (deque)
 
     def sample(self):
         """Randomly sample a batch of experiences from memory."""

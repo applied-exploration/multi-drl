@@ -12,19 +12,20 @@ from constants import *
 from memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
 
 class MADDPG:
-    def __init__(self, state_size, action_size, random_seed=32, num_agent = 2):
+    def __init__(self, state_size, action_size, config = DDPGAgentConfig(), random_seed=32, num_agent = 2):
         super(MADDPG, self).__init__()
-
+        
+        self.config = config
         # critic input = obs_full + actions = 14+2+2+2=20
-        self.maddpg_agent = [DDPG_Agent(state_size, action_size, random_seed, actor_hidden=[128, 64], critic_hidden=[128, 64], id=i, num_agent=num_agent) for i in range(num_agent)]
+        self.maddpg_agent = [DDPG_Agent(state_size, action_size, random_seed, config = config,  actor_hidden=[128, 64], critic_hidden=[128, 64], id=i, num_agent=num_agent) for i in range(num_agent)]
 
         
         #state_size, action_size, random_seed, actor_hidden= [400, 300], critic_hidden = [400, 300]
         #def __init__(self, in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=1.0e-2, lr_critic=1.0e-2)
-        self.memory = ReplayBuffer(action_size, random_seed)
+        self.memory = ReplayBuffer(action_size, random_seed, config.BUFFER_SIZE, config.BATCH_SIZE)
 
-        self.discount_factor = GAMMA
-        self.tau = TAU
+        self.discount_factor = self.config.GAMMA
+        self.tau = self.config.TAU
         self.iter = 0
 
     def get_actors(self):
