@@ -3,7 +3,7 @@ from agent_deepqn.agent import DeepQAgent
 from environment.grid import GridEnv
 from collections import deque
 import numpy as np
-from utils import flatten
+from utilities.helper import flatten
 
 # env = GridEnv(1, agents_start = [(1,1)], goals_start=[(7,7)])
 # agents = [DeepQAgent(env.state_space, env.action_space.n)]

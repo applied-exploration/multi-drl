@@ -5,10 +5,7 @@ import torch.nn.functional as F
 
 # General Training parameters #
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")     # Training on GPU or CPU
-SCORES_WINDOW = 100
 
-SAVE_PATH = "Trained_Agents/"
-SAVE_EXP_PATH = "Experiments/"
 
 class DDPG_AgentConfig:
     # Replay Buffer parameters #
@@ -18,13 +15,13 @@ class DDPG_AgentConfig:
 
     # Learning parameters #
     GAMMA = 0.99                    # Discount rate
-    LR_ACTOR = 1e-2                 # Learning rate for Actor optimization
-    LR_CRITIC = 1e-2                # Learning rate for Critic optimization
+    LR_ACTOR = 1e-4                 # Learning rate for Actor optimization
+    LR_CRITIC = 1e-4                # Learning rate for Critic optimization
     # CRITERION = F.mse_loss          # What criterion to use when comparing expected return to target return
     WEIGHT_DECAY= 0                 # L2 weight decay
     TAU = 1e-3                      # Target Mixin probability
-    ACTOR_H = [16, 8]              # Hidden layer size of Actor Network       
-    CRITIC_H =  [16, 8]            # Hidden layer size of Critic Network
+    ACTOR_H = [32]              # Hidden layer size of Actor Network       
+    CRITIC_H =  [32]            # Hidden layer size of Critic Network
 
     # OUNoise parameters #
     MU=0.
@@ -34,31 +31,36 @@ class DDPG_AgentConfig:
     # Actor parameters #
     OUTPUT_TYPE = 'probs'
 
-def print_constants():
-    print("")
-    print("--- General Training parameters ---")
-    print("DEVICE: ", DEVICE)
-    print("SCORES_WINDOW: ", SCORES_WINDOW)
-    print("SAVE_PATH: ", SAVE_PATH)
-    print("SAVE_EXP_PATH: ", SAVE_EXP_PATH)
+    SCORES_WINDOW = 100
 
-    print("")
-    print("--- Replay Buffer parameters ---")
-    print("BUFFER_SIZE: ", BUFFER_SIZE)
-    print("UPDATE_EVERY: ", UPDATE_EVERY)
-    print("BATCH_SIZE: ", BATCH_SIZE)
+    SAVE_PATH = "Trained_Agents/"
+    SAVE_EXP_PATH = "Experiments/"
 
-    print("")
-    print("--- Learning parameters ---")
-    print("GAMMA: ", GAMMA)
-    print("LR_ACTOR: ", LR_ACTOR)
-    print("LR_CRITIC: ", LR_CRITIC)
-    # print("CRITERION: ", CRITERION)
-    print("WEIGHT_DECAY: ", WEIGHT_DECAY)
-    print("TAU: ", TAU)
+# def print_constants():
+#     print("")
+#     print("--- General Training parameters ---")
+#     print("DEVICE: ", DEVICE)
+#     print("SCORES_WINDOW: ", SCORES_WINDOW)
+#     print("SAVE_PATH: ", SAVE_PATH)
+#     print("SAVE_EXP_PATH: ", SAVE_EXP_PATH)
 
-    print("")
-    print("--- OUNoise ---")
-    print("MU: ", MU)
-    print("THETA: ", THETA)
-    print("SIGMA: ", SIGMA)
+#     print("")
+#     print("--- Replay Buffer parameters ---")
+#     print("BUFFER_SIZE: ", BUFFER_SIZE)
+#     print("UPDATE_EVERY: ", UPDATE_EVERY)
+#     print("BATCH_SIZE: ", BATCH_SIZE)
+
+#     print("")
+#     print("--- Learning parameters ---")
+#     print("GAMMA: ", GAMMA)
+#     print("LR_ACTOR: ", LR_ACTOR)
+#     print("LR_CRITIC: ", LR_CRITIC)
+#     # print("CRITERION: ", CRITERION)
+#     print("WEIGHT_DECAY: ", WEIGHT_DECAY)
+#     print("TAU: ", TAU)
+
+#     print("")
+#     print("--- OUNoise ---")
+#     print("MU: ", MU)
+#     print("THETA: ", THETA)
+#     print("SIGMA: ", SIGMA)

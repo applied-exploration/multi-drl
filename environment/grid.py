@@ -8,7 +8,7 @@ import numpy as np
 from typing import List, Tuple
 import itertools
 from iteration_utilities import duplicates , unique_everseen
-from utils import unique, flatten
+from utilities.helper import unique, flatten
 
 
 def new_grid(size):

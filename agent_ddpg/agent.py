@@ -1,12 +1,12 @@
 ## Deep Deterministic Policy Gradients ##
-from .a_model import Actor, Critic    # These are our models
+from .model import Actor, Critic    # These are our models
 # from model_provided import Actor, Critic    # These are our models
 import numpy as np
 import random                       # Used for random seed
 import copy                         # This is used for the mixing of target and local model parameters
 
 # from .constants import *             # Capital lettered variables are constants from the constants.py file
-from .a_memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
+from .memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
 from .constants import DDPG_AgentConfig
 
 import torch
@@ -51,7 +51,7 @@ class DDPG_Agent(Agent):
         # What the policy is tuned for
         self.output_type = self.config.OUTPUT_TYPE
 
-        self.last_action_probs = np.zeros(4)
+        self.last_action_probs = np.full(shape=action_size,  fill_value=1/action_size,  dtype=np.float)
 
         print("")
         print("--- Agent Params ---")
@@ -89,10 +89,10 @@ class DDPG_Agent(Agent):
             self.last_action_probs = actions.copy()
 
             chosen_action = np.random.choice(len(actions), p=actions)
-            print("action_prob: {}".format(actions))
-            print("chosen_action: {}".format(chosen_action))
+            # print("action_prob: {}".format(actions))
+            # print("chosen_action: {}".format(chosen_action))
             return chosen_action
-            
+
         elif self.output_type is 'vectors':
             if add_noise:
                 actions += self.noise.sample()
@@ -123,6 +123,7 @@ class DDPG_Agent(Agent):
 
         self.critic_opt.zero_grad()
         critic_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 1)
         self.critic_opt.step()
 
 

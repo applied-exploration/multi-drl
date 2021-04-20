@@ -11,7 +11,7 @@ import itertools
 from iteration_utilities import duplicates , unique_everseen
 from gym import spaces
 import matplotlib.pyplot as plt
-from utils import flatten, unique
+from utilities.helper import flatten, unique
 
 
 def new_pos(existing, size):
