@@ -1,5 +1,5 @@
 
-from training import train
+from experiments.training import train
 import logging
 import uuid
 import time
@@ -18,7 +18,7 @@ class Experiment():
 
         self.id = uuid.uuid4()
 
-        logging.basicConfig(filename='Logs/{}-{}.log'.format(time.strftime(
+        logging.basicConfig(filename='experiments/logs/{}-{}.log'.format(time.strftime(
             "%Y-%m-%d_%H%M"),str(self.id)),
                     format='[%(levelname)s]: [%(asctime)s] [%(message)s]', datefmt='%m/%d/%Y %I:%M:%S %p')
         
@@ -31,7 +31,8 @@ class Experiment():
             score_history, state_history = train(env=self.environment,
                                                  agents=self.agents,
                                                  max_t=self.max_t,
-                                                 num_episodes=self.num_episodes)
+                                                 num_episodes=self.num_episodes,
+                                                 flatten_state = self.agents[0].config.FLATTEN_STATE)
         except Exception as e:
             print("Encountered an error, going to log into file")
             self.save_error(e)
@@ -41,9 +42,9 @@ class Experiment():
 
 
     def save(self, score_history=[], state_history=[], options=['scores', 'figures', 'states'], display = True, scores_window=0):
-        if 'scores' in options: save_scores(score_history, config = self.agents[0].config)
-        if 'states' in options: print(state_history)#save_states(score_history)
-        render_figure(goal=self.goal, display=display, save= 'figures' in options, config = self.agents[0].config, scores_window=scores_window) 
+        if 'scores' in options: save_scores(score_history, agents = self.agents)
+        #if 'states' in options: print(state_history)#save_states(score_history)
+        render_figure(score_history, agents = self.agents, goal=self.goal, display=display, save= 'figures' in options, scores_window=scores_window) 
 
     def save_error(self, error):
         self.logger.error(str(error))

@@ -1,6 +1,3 @@
-from agent_reinforce.agent import REINFORCEAgent
-from agent_deepqn.agent import DeepQAgent
-from environment.grid import GridEnv
 from collections import deque
 import numpy as np
 from utilities.helper import flatten
@@ -36,9 +33,11 @@ def train(env, agents, max_t, num_episodes, scores_window=100, flatten_state=Fal
             states = next_states
             if done == True:
                 break
+
+        scores_deque.append(scores)
+        score_history.append(scores)
         returns_in_episode = np.mean(scores)
-        scores_deque.append(returns_in_episode)
-        score_history.append(returns_in_episode)
+
         [agent.reset() for agent in agents]
         if episode > scores_window:
             if np.mean(scores_deque) > last_running_mean:

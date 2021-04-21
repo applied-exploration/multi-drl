@@ -6,7 +6,7 @@ import sys, os
 sys.path.append(os.path.abspath('..'))
 
 from .model import QNetwork
-from abstract_agent import Agent
+from agents.abstract_agent import Agent
 from utilities.helper import flatten
 
 import torch
@@ -20,6 +20,7 @@ class DeepQAgentConfig:
     TAU = 1e-3              # for soft update of target parameters
     LR = 5e-4               # learning rate 
     UPDATE_EVERY = 4       # how often to update the network
+    FLATTEN_STATE = True
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -27,7 +28,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class DeepQAgent(Agent):
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, config = DeepQAgentConfig(), seed = 1, samp_frames=1):
+    def __init__(self, state_size, action_size, config = DeepQAgentConfig(), seed = 1, samp_frames=1, hidden=[32, 32]):
         """Initialize an Agent object.
         
         Params
@@ -40,10 +41,11 @@ class DeepQAgent(Agent):
         self.action_size = action_size
         self.seed = random.seed(seed)
         self.config = config
+        self.hidden=hidden
 
         # Q-Network
-        self.qnetwork_local = QNetwork(state_size *samp_frames, action_size, seed, 32, 32).to(device)
-        self.qnetwork_target = QNetwork(state_size *samp_frames, action_size, seed, 32, 32).to(device)
+        self.qnetwork_local = QNetwork(state_size *samp_frames, action_size, seed, hidden[0], hidden[1]).to(device)
+        self.qnetwork_target = QNetwork(state_size *samp_frames, action_size, seed, hidden[0], hidden[1]).to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=self.config.LR)
 
         # Replay memory
@@ -51,6 +53,11 @@ class DeepQAgent(Agent):
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
     
+    def get_title(self):
+            for_title = "Network:: Hidden layers: {} LR: {}\nBuffer:: Size: {} | Batch size: {}".format(' '.join([str(elem) for elem in self.hidden]), self.config.LR, self.config.BUFFER_SIZE, self.config.BATCH_SIZE )
+            for_filename = "Network size_{}".format(' '.join([str(elem) for elem in self.hidden]))
+            return for_title, for_filename
+
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
         self.memory.add(state, action, reward, next_state, done)

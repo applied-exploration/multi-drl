@@ -14,3 +14,6 @@ class Agent(ABC):
 
     def save(self):
         pass
+
+    def get_title(self):
+        pass
