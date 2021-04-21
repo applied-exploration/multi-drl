@@ -6,7 +6,7 @@ import numpy as np
 from utilities.helper import flatten
 
 
-def train(agents, env, max_t=100, num_episodes = 1000, scores_window=100, flatten_state=False):
+def train(agents, env, max_t=100, num_episodes = 1000, scores_window=100, flatten_state=False, print_every = 20):
     
     score_history = []
     scores_deque = deque(score_history[-scores_window:], maxlen=scores_window)
@@ -14,7 +14,6 @@ def train(agents, env, max_t=100, num_episodes = 1000, scores_window=100, flatte
 
     for episode in range(num_episodes):
         states = env.reset()
-        [agent.reset() for agent in agents]
         scores = np.zeros(len(agents))
 
         for i in range(max_t):
@@ -38,14 +37,15 @@ def train(agents, env, max_t=100, num_episodes = 1000, scores_window=100, flatte
         returns_in_episode = np.mean(scores)
         scores_deque.append(returns_in_episode)
         score_history.append(returns_in_episode)
+        [agent.reset() for agent in agents]
         if episode > scores_window:
             if np.mean(scores_deque) > last_running_mean:
                     # print("")
                     # print('Last {} was better, going to save it'.format(scores_window))
                     [agent.save() for agent in agents]
                     last_running_mean = np.mean(scores_deque)
-
-        print("\r", 'Total score (averaged over agents) {} episode: {} | \tAvarage in last {} is {}'.format(episode, returns_in_episode, scores_window, np.mean(scores_deque)), end="")
+        if episode % print_every == 0:
+            print("\r", 'Total score (averaged over agents) {} episode: {} | \tAvarage in last {} is {}'.format(episode, returns_in_episode, scores_window, np.mean(scores_deque)), end="")
 
 
     return score_history
