@@ -16,41 +16,45 @@ def calculate_moving_avarage(scores, num_agent=1, scores_window=100):
     return moving_avarages
 
 
-def render_save_graph(scores, config, scores_window=0, num_agent=1, path="", goal=0, save=False):
+def render_figure(scores, config, scores_window=0, num_agent=1, path="", goal=0, save=False, display= True):
     if len(path) < 1:
         path = config.SAVE_EXP_PATH
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
+    # --- Plot labels --- #
+    hyperparameter_string, for_filename = get_constant_string(config)
+    plt.title(hyperparameter_string)
+    plt.ylabel('Score')
+    plt.xlabel('Episode #')
+
+    # --- Plot lines --- #
     plt.plot(np.arange(1, len(scores)+1), scores)
 
-    if scores_window > 0:
+    if config.scores_window > 0:
         moving_avarages = calculate_moving_avarage(
             [scores], num_agent, scores_window=scores_window)
 
         for i_agent in range(len(moving_avarages)):
             plt.plot(np.arange(len(moving_avarages[i_agent]) + scores_window)[scores_window:], moving_avarages[i_agent], 'g-')
 
-    plt.ylabel('Score')
-    plt.xlabel('Episode #')
-
-    if goal > 0:
+    if goal > 0.:
         plt.axhline(y=goal, color='c', linestyle='--')
 
-    hyperparameter_string, for_filename = get_constant_string(config)
-
-    plt.title(hyperparameter_string)
+    # --- Save and Display --- #
     if save:
         plt.savefig("{}Figure_{}_{}.jpg".format(path, time.strftime(
             "%Y-%m-%d_%H%M"), for_filename), bbox_inches='tight')
 
-    plt.show()
+    if display: plt.show()
+
+
 
 
 def save_scores(scores, config, path=""):
     if len(path) < 1:
-        path = config.SAVE_EXP_PATH
+        path = 'experiments/'
 
     if not os.path.exists(path):
         print("Directory doesn't exist, going to create one first")
