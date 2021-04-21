@@ -61,7 +61,7 @@ class DeepQAgent(Agent):
             # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > self.config.BATCH_SIZE:
                 experiences = self.memory.sample()
-                self.learn(experiences, self.config.GAMMA)
+                self.__learn(experiences, self.config.GAMMA)
 
     def act(self, state, eps=0.):
         """Returns actions for given state as per current policy.
@@ -83,7 +83,10 @@ class DeepQAgent(Agent):
         else:
             return random.choice(np.arange(self.action_size))
 
-    def learn(self, experiences, gamma):
+    def reset(self):
+        pass
+
+    def __learn(self, experiences, gamma):
         """Update value parameters using given batch of experience tuples.
 
         Params
@@ -109,9 +112,9 @@ class DeepQAgent(Agent):
         self.optimizer.step()
 
         # ------------------- update target network ------------------- #
-        self.soft_update(self.qnetwork_local, self.qnetwork_target, self.config.TAU)                     
+        self.__soft_update(self.qnetwork_local, self.qnetwork_target, self.config.TAU)                     
 
-    def soft_update(self, local_model, target_model, tau):
+    def __soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.
         θ_target = τ*θ_local + (1 - τ)*θ_target
 
@@ -125,8 +128,7 @@ class DeepQAgent(Agent):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
 
 
-    def reset(self):
-        pass
+
 
 
 class ReplayBuffer:

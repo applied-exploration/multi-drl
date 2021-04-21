@@ -76,11 +76,9 @@ class GridEnv(gym.Env):
 
         self.reset()
         
-        print("")
-        print("Final Self players: ", self.players)
-        print("Final Self goals: ", self.goals)
-        
-        
+        # print("")
+        # print("Final Self players: ", self.players)
+        # print("Final Self goals: ", self.goals)
 
     def step(self, actions):
         self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]

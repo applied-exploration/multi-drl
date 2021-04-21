@@ -15,6 +15,7 @@ import torch.optim as optim
 
 class REINFORCEAgentConfig:
     LR = 5e-4               # learning rate 
+    GAMMA = 1.0
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -39,23 +40,36 @@ class REINFORCEAgent(Agent):
         self.model = Model(state_size, action_size).to(device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.LR)
     
-
+        self.episode_rewards = []
+        self.last_log_prob = None
+        self.episode_log_probs = []
+        
 
     def act(self, state):
-        return self.model.act(state)
+        action, log_prob = self.model.act(state)
+        self.last_log_prob = log_prob
+        return action
 
-    def learn(self, rewards, gamma, saved_log_probs):
-        discounts = [gamma**i for i in range(len(rewards)+1)]
+    def step(self, state, action, reward, next_state, done):
+        self.episode_rewards.append(reward)
+        self.episode_log_probs.append(self.last_log_prob)
+
+
+    def reset(self):
+        if len(self.episode_rewards) == 0: return
+        self.__learn(self.episode_rewards, self.episode_log_probs)
+        self.episode_log_probs = []
+        self.episode_rewards = []
+
+    def __learn(self, rewards, episode_log_probs):
+        discounts = [self.config.GAMMA**i for i in range(len(rewards)+1)]
         R = sum([a*b for a,b in zip(discounts, rewards)])
         
         policy_loss = []
-        for log_prob in saved_log_probs:
+        for log_prob in episode_log_probs:
             policy_loss.append(-log_prob * R)
         policy_loss = torch.cat(policy_loss).sum()
         
         self.optimizer.zero_grad()
         policy_loss.backward()
         self.optimizer.step()
-
-    def reset(self):
-        pass
