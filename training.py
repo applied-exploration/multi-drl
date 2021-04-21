@@ -4,10 +4,14 @@ from environment.grid import GridEnv
 from collections import deque
 import numpy as np
 from utilities.helper import flatten
+from experiment import Experiment
 
+def train(experiment: Experiment, scores_window=100, flatten_state=False, print_every = 20):
+    env = experiment.environment
+    agents = experiment.agents
+    max_t = experiment.max_t
+    num_episodes = experiment.num_episodes
 
-def train(agents, env, max_t=100, num_episodes = 1000, scores_window=100, flatten_state=False, print_every = 20):
-    
     score_history = []
     scores_deque = deque(score_history[-scores_window:], maxlen=scores_window)
     last_running_mean = float('-inf')
