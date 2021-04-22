@@ -1,27 +1,32 @@
 ## Deep Deterministic Policy Gradients ##
+from agents.abstract_agent import Agent
 from .model import Actor, Critic    # These are our models
 # from model_provided import Actor, Critic    # These are our models
 import numpy as np
 import random                       # Used for random seed
-import copy                         # This is used for the mixing of target and local model parameters
+# This is used for the mixing of target and local model parameters
+import copy
 
 # from .constants import *             # Capital lettered variables are constants from the constants.py file
-from .memory import ReplayBuffer     # Our replaybuffer, where we store the experiences
+# Our replaybuffer, where we store the experiences
+from .memory import ReplayBuffer
 from .constants import DDPG_AgentConfig
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-import sys, os
+import sys
+import os
 sys.path.append(os.path.abspath('..'))
 
-from abstract_agent import Agent
 
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")     # Training on GPU or CPU
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available()
+                      else "cpu")     # Training on GPU or CPU
+
 
 class DDPG_Agent(Agent):
-    def __init__(self, state_size, action_size, seed = 1, config = DDPG_AgentConfig()):
+    def __init__(self, state_size, action_size, seed=1, config=DDPG_AgentConfig()):
         super(DDPG_Agent, self).__init__()
 
         self.config = config
@@ -31,41 +36,59 @@ class DDPG_Agent(Agent):
         # self.actor_target = Actor(state_size, action_size, random_seed).to(DEVICE)
         # self.critic_local = Critic(state_size, action_size, random_seed).to(DEVICE)
         # self.critic_target = Critic(state_size, action_size, random_seed).to(DEVICE)
-        self.actor_local = Actor(state_size, action_size, seed, hidden_layer_param=self.config.ACTOR_H, output_type=self.config.OUTPUT_TYPE).to(DEVICE)
-        self.actor_target = Actor(state_size, action_size, seed, hidden_layer_param=self.config.ACTOR_H, output_type=self.config.OUTPUT_TYPE).to(DEVICE)
-        self.critic_local = Critic(state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
-        self.critic_target = Critic(state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
+        self.actor_local = Actor(state_size, action_size, seed, hidden_layer_param=self.config.ACTOR_H,
+                                 output_type=self.config.OUTPUT_TYPE).to(DEVICE)
+        self.actor_target = Actor(state_size, action_size, seed,
+                                  hidden_layer_param=self.config.ACTOR_H, output_type=self.config.OUTPUT_TYPE).to(DEVICE)
+        self.critic_local = Critic(
+            state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
+        self.critic_target = Critic(
+            state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
 
-        self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=self.config.LR_ACTOR)
-        self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=self.config.LR_CRITIC, weight_decay=self.config.WEIGHT_DECAY)
-        
+        self.actor_opt = optim.Adam(
+            self.actor_local.parameters(), lr=self.config.LR_ACTOR)
+        self.critic_opt = optim.Adam(self.critic_local.parameters(
+        ), lr=self.config.LR_CRITIC, weight_decay=self.config.WEIGHT_DECAY)
+
         # Noise process
-        self.noise = OUNoise(action_size, seed, self.config.MU, self.config.THETA, self.config.SIGMA)
+        self.noise = OUNoise(action_size, seed, self.config.MU,
+                             self.config.THETA, self.config.SIGMA)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, seed, self.config.BATCH_SIZE, self.config.BUFFER_SIZE)
+        self.memory = ReplayBuffer(
+            action_size, seed, self.config.BATCH_SIZE, self.config.BUFFER_SIZE)
 
-        self.soft_update(self.critic_local, self.critic_target, 1) 
-        self.soft_update(self.actor_local, self.actor_target, 1) 
+        self.soft_update(self.critic_local, self.critic_target, 1)
+        self.soft_update(self.actor_local, self.actor_target, 1)
 
         # What the policy is tuned for
         self.output_type = self.config.OUTPUT_TYPE
 
-        self.last_action_probs = np.full(shape=action_size,  fill_value=1/action_size,  dtype=np.float)
+        self.last_action_probs = np.full(
+            shape=action_size,  fill_value=1/action_size,  dtype=np.float)
 
         print("")
         print("--- Agent Params ---")
         print("Going to train on {}".format(DEVICE))
-        print("Learning Rate:: Actor: {} | Critic: {}".format(self.config.LR_ACTOR, self.config.LR_CRITIC))
-        print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(self.config.BUFFER_SIZE, self.config.BATCH_SIZE))
+        print("Learning Rate:: Actor: {} | Critic: {}".format(
+            self.config.LR_ACTOR, self.config.LR_CRITIC))
+        print("Replay Buffer:: Buffer Size: {} | Sampled Batch size: {}".format(
+            self.config.BUFFER_SIZE, self.config.BATCH_SIZE))
         print("")
-        print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, self.config.ACTOR_H, action_size))
-        print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(state_size, [self.config.CRITIC_H[0] + action_size, *self.config.CRITIC_H[1:]], 1))
+        print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(
+            state_size, self.config.ACTOR_H, action_size))
+        print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(
+            state_size, [self.config.CRITIC_H[0] + action_size, *self.config.CRITIC_H[1:]], 1))
         print(self.actor_local)
         print(self.critic_local)
         print("Output type is: {}".format(self.output_type))
         print("")
         print("")
+
+    def get_title(self):
+        for_title = "Network:: A: {} | C: {}\nLearning:: LR_A: {} | LR_C: {} | TAU: {} \nNoise:: MU: {} | THETA: {} | SIGMA: {}\nBuffer:: Size: {} | Batch size: {}".format(config.ACTOR_H, config.CRITIC_H, config.LR_ACTOR, config.LR_CRITIC, config.TAU, config.MU, config.THETA, config.SIGMA, config.BUFFER_SIZE, config.BATCH_SIZE)
+        for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in config.ACTOR_H]), ' '.join([str(elem) for elem in config.CRITIC_H]))
+        return for_title, for_filename
 
 
     def reset(self):

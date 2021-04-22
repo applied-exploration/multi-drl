@@ -1,18 +1,10 @@
-from agent_reinforce.agent import REINFORCEAgent
-from agent_deepqn.agent import DeepQAgent
-from environment.grid import GridEnv
 from collections import deque
 import numpy as np
 from utilities.helper import flatten
-from experiment import Experiment
 
-def train(experiment: Experiment, scores_window=100, flatten_state=False, print_every = 20):
-    env = experiment.environment
-    agents = experiment.agents
-    max_t = experiment.max_t
-    num_episodes = experiment.num_episodes
-
+def train(env, agents, max_t, num_episodes, scores_window=100, flatten_state=False, print_every = 20, save_states = 0):
     score_history = []
+    state_history = []
     scores_deque = deque(score_history[-scores_window:], maxlen=scores_window)
     last_running_mean = float('-inf')
 
@@ -35,12 +27,17 @@ def train(experiment: Experiment, scores_window=100, flatten_state=False, print_
 
             scores += rewards
 
+            if save_states > 0 and i % save_states == 0:
+                state_history.append(states)
+
             states = next_states
             if done == True:
                 break
+
+        scores_deque.append(scores)
+        score_history.append(scores)
         returns_in_episode = np.mean(scores)
-        scores_deque.append(returns_in_episode)
-        score_history.append(returns_in_episode)
+
         [agent.reset() for agent in agents]
         if episode > scores_window:
             if np.mean(scores_deque) > last_running_mean:
@@ -48,8 +45,8 @@ def train(experiment: Experiment, scores_window=100, flatten_state=False, print_
                     # print('Last {} was better, going to save it'.format(scores_window))
                     [agent.save() for agent in agents]
                     last_running_mean = np.mean(scores_deque)
-        if episode % print_every == 0:
+     
             print("\r", 'Total score (averaged over agents) {} episode: {} | \tAvarage in last {} is {}'.format(episode, returns_in_episode, scores_window, np.mean(scores_deque)), end="")
 
 
-    return score_history
+    return score_history, state_history

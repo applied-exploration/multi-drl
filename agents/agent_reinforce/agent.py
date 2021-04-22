@@ -4,7 +4,7 @@ from collections import namedtuple, deque
 
 import sys, os
 sys.path.append(os.path.abspath('..'))
-from abstract_agent import Agent
+from agents.abstract_agent import Agent
 
 from .model import Model
 
@@ -43,7 +43,11 @@ class REINFORCEAgent(Agent):
         self.episode_rewards = []
         self.last_log_prob = None
         self.episode_log_probs = []
-        
+    
+    def get_title(self):
+        for_title = "REINFORCE Agent"
+        for_filename = "REINFORCE"
+        return for_title, for_filename
 
     def act(self, state):
         action, log_prob = self.model.act(state)

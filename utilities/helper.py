@@ -3,10 +3,10 @@ import torch
 # from constants import *             # Capital lettered variables are constants from the constants.py file
 
 
-def get_constant_string(config):
-    for_title = "Network:: A: {} | C: {}\nLearning:: LR_A: {} | LR_C: {} | TAU: {} \nNoise:: MU: {} | THETA: {} | SIGMA: {}\nBuffer:: Size: {} | Batch size: {}".format(config.ACTOR_H, config.CRITIC_H, config.LR_ACTOR, config.LR_CRITIC, config.TAU, config.MU, config.THETA, config.SIGMA, config.BUFFER_SIZE, config.BATCH_SIZE)
-    for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in config.ACTOR_H]), ' '.join([str(elem) for elem in config.CRITIC_H]))
-    return for_title, for_filename
+# def get_constant_string(config):
+#     for_title = "Network:: A: {} | C: {}\nLearning:: LR_A: {} | LR_C: {} | TAU: {} \nNoise:: MU: {} | THETA: {} | SIGMA: {}\nBuffer:: Size: {} | Batch size: {}".format(config.ACTOR_H, config.CRITIC_H, config.LR_ACTOR, config.LR_CRITIC, config.TAU, config.MU, config.THETA, config.SIGMA, config.BUFFER_SIZE, config.BATCH_SIZE)
+#     for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in config.ACTOR_H]), ' '.join([str(elem) for elem in config.CRITIC_H]))
+#     return for_title, for_filename
 
 
 
