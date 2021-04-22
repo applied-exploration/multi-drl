@@ -10,7 +10,7 @@ import copy
 # from .constants import *             # Capital lettered variables are constants from the constants.py file
 # Our replaybuffer, where we store the experiences
 from .memory import ReplayBuffer
-from .constants import DDPG_AgentConfig
+from .config import DDPG_AgentConfig
 
 import torch
 import torch.nn.functional as F
@@ -31,6 +31,8 @@ class DDPG_Agent(Agent):
 
         self.config = config
         self.seed = random.seed(seed)
+        self.state_size=state_size
+        self.state_size=action_size
 
         # self.actor_local = Actor(state_size, action_size, random_seed).to(DEVICE)
         # self.actor_target = Actor(state_size, action_size, random_seed).to(DEVICE)
@@ -67,6 +69,9 @@ class DDPG_Agent(Agent):
         self.last_action_probs = np.full(
             shape=action_size,  fill_value=1/action_size,  dtype=np.float)
 
+
+
+    def __str__(self):
         print("")
         print("--- Agent Params ---")
         print("Going to train on {}".format(DEVICE))
@@ -76,9 +81,9 @@ class DDPG_Agent(Agent):
             self.config.BUFFER_SIZE, self.config.BATCH_SIZE))
         print("")
         print("Actor paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(
-            state_size, self.config.ACTOR_H, action_size))
+            self.state_size, self.config.ACTOR_H, self.action_size))
         print("Critic paramaters:: Input: {} | Hidden Layers: {} | Output: {}".format(
-            state_size, [self.config.CRITIC_H[0] + action_size, *self.config.CRITIC_H[1:]], 1))
+            self.state_size, [self.config.CRITIC_H[0] + self.action_size, *self.config.CRITIC_H[1:]], 1))
         print(self.actor_local)
         print(self.critic_local)
         print("Output type is: {}".format(self.output_type))
@@ -86,8 +91,8 @@ class DDPG_Agent(Agent):
         print("")
 
     def get_title(self):
-        for_title = "Network:: A: {} | C: {}\nLearning:: LR_A: {} | LR_C: {} | TAU: {} \nNoise:: MU: {} | THETA: {} | SIGMA: {}\nBuffer:: Size: {} | Batch size: {}".format(config.ACTOR_H, config.CRITIC_H, config.LR_ACTOR, config.LR_CRITIC, config.TAU, config.MU, config.THETA, config.SIGMA, config.BUFFER_SIZE, config.BATCH_SIZE)
-        for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in config.ACTOR_H]), ' '.join([str(elem) for elem in config.CRITIC_H]))
+        for_title = "Network:: A: {} | C: {}\nLearning:: LR_A: {} | LR_C: {} | TAU: {} \nNoise:: MU: {} | THETA: {} | SIGMA: {}\nBuffer:: Size: {} | Batch size: {}".format(self.config.ACTOR_H, self.config.CRITIC_H, self.config.LR_ACTOR, self.config.LR_CRITIC, self.config.TAU, self.config.MU, self.config.THETA, self.config.SIGMA, self.config.BUFFER_SIZE, self.config.BATCH_SIZE)
+        for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in self.config.ACTOR_H]), ' '.join([str(elem) for elem in self.config.CRITIC_H]))
         return for_title, for_filename
 
 
