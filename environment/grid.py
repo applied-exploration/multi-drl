@@ -121,7 +121,7 @@ class GridEnv(gym.Env):
         if self.agents_fully_observable == False:
             return players_goals
         else:
-            return [flatten(players_goals)] * self.num_agent
+            return [flatten(players_goals) for i in range(self.num_agent)]
 
 
     def render(self, mode='human', close=False):
