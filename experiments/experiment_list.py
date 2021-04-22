@@ -41,18 +41,24 @@ num_players = np.array([1, 2, 3, 4])
 agents_start = np.array([None, (1, 1), (1, 1)], dtype=object)
 goals_start = np.array([None, None, (3, 3)], dtype=object)
 prob_right_direction = np.array([1, 0.7])
+#fully_observable = np.array([True, False])
+
 
 # --- AGENTS --- #
 # DDPG
-actor_critic = [(16,16), (32,32), (64,64)]
-# PPO
-network = [(16,16), (32,32), (64,64)]
+actor_critic = [(16), (32), (16,16), (32,32), (64,64)]
+
+# PPO/REINFORCE
+network = [(16, 16), (32, 32), (64, 64)]
+
 # DQN
-network_dqn = [(16,16), (32,32), (64,64)]
+network_dqn = [(16), (32), (64)]
 
 
 config_ddpg = [num_players, agents_start, goals_start, prob_right_direction, actor_critic]
 config_ppo = [num_players, agents_start, goals_start, prob_right_direction, network]
 config_dqn = [num_players, agents_start, goals_start, prob_right_direction, network_dqn]
 
-print(len(list(itertools.product(*configs))))
+exp1 = list(itertools.product(*config_ddpg))
+exp2 = list(itertools.product(*config_ppo))
+exp3 = list(itertools.product(*config_dqn))

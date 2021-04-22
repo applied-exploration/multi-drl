@@ -35,7 +35,7 @@ class Experiment():
                                                  flatten_state = self.agents[0].config.FLATTEN_STATE)
         except Exception as e:
             print("Encountered an error, going to log into file")
-            self.save_error(e)
+            self.__save_error(e)
         finally:
             print("Ran experiments")
             return score_history, state_history
@@ -46,5 +46,5 @@ class Experiment():
         #if 'states' in options: print(state_history)#save_states(score_history)
         render_figure(score_history, agents = self.agents, goal=self.goal, display=display, save= 'figures' in options, scores_window=scores_window) 
 
-    def save_error(self, error):
+    def __save_error(self, error):
         self.logger.error(str(error))
