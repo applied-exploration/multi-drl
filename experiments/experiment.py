@@ -31,8 +31,7 @@ class Experiment():
             score_history, state_history = train(env=self.environment,
                                                  agents=self.agents,
                                                  max_t=self.max_t,
-                                                 num_episodes=self.num_episodes,
-                                                 flatten_state = self.agents[0].config.FLATTEN_STATE)
+                                                 num_episodes=self.num_episodes)
         except Exception as e:
             print("Encountered an error, going to log into file")
             self.__save_error(e)

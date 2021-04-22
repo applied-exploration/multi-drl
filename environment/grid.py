@@ -57,15 +57,19 @@ def limit_to_size(pos, grid_size):
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, agents_start = [], goals_start=[], render_board = False):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, agents_start = [], goals_start=[], agents_fully_observable = False, render_board = False):
         self.num_agent = num_agent
         self.grid_size = grid_size
         self.prob_right_direction = prob_right_direction
         self.action_space = spaces.Discrete(4)
-        self.state_space = num_agent * 4
+        if agents_fully_observable == True:
+            self.state_space = num_agent * 4        
+        else:
+            self.state_space = 4
         self.agents_start = agents_start
         self.goals_start = goals_start
         self.render_board = render_board
+        self.agents_fully_observable = agents_fully_observable
 
         if len(self.agents_start) > num_agent or len(self.goals_start) > num_agent: 
             print("Too many arguments for agent or goal, going to truncate")
@@ -83,7 +87,7 @@ class GridEnv(gym.Env):
     def step(self, actions):
         self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]
 
-        states = self.get_state()
+        states = self.__get_state()
         is_at_goal = [player == goal for player, goal in zip(self.players, self.goals)]
         reward_is_at_goal = [-1 if x == False else 20 for x in is_at_goal]
         
@@ -109,11 +113,16 @@ class GridEnv(gym.Env):
         if len(self.players) != self.num_agent or len(self.goals) != self.num_agent:
             return self.reset()
 
-        return self.get_state()
+        return self.__get_state()
 
-    def get_state(self):
-        zipped = list(map(flatten, list(zip(self.players, self.goals))))
-        return list(map(lambda inner_array: list(map(lambda x: x / 8, inner_array)), zipped))
+    def __get_state(self):
+        players_goals = list(map(flatten, list(zip(self.players, self.goals))))
+        players_goals = list(map(lambda inner_array: list(map(lambda x: x / self.grid_size, inner_array)), players_goals))
+        if self.agents_fully_observable == False:
+            return players_goals
+        else:
+            return [flatten(players_goals)] * self.num_agent
+
 
     def render(self, mode='human', close=False):
         annotated_grid = np.copy(self.grid)
