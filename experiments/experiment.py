@@ -24,20 +24,27 @@ class Experiment():
         
         self.logger = logging.getLogger(str(self.id))
 
-    def run(self):
+    def run(self, development_mode = True):
         score_history, state_history = [], []
-        try:
-            print("Running experiment")
-            score_history, state_history = train(env=self.environment,
-                                                 agents=self.agents,
-                                                 max_t=self.max_t,
-                                                 num_episodes=self.num_episodes)
-        except Exception as e:
-            print("Encountered an error, going to log into file")
-            self.__save_error(e)
-        finally:
-            print("Ran experiments")
-            return score_history, state_history
+        if development_mode == False:
+            try:
+                print("Running experiment")
+                score_history, state_history = train(env=self.environment,
+                                                    agents=self.agents,
+                                                    max_t=self.max_t,
+                                                    num_episodes=self.num_episodes)
+            except Exception as e:
+                print("Encountered an error, going to log into file")
+                self.__save_error(e)
+            finally:
+                print("Ran experiments")
+                return score_history, state_history
+        else:
+            return train(env=self.environment,
+                        agents=self.agents,
+                        max_t=self.max_t,
+                        num_episodes=self.num_episodes)
+
 
 
     def save(self, score_history=[], state_history=[], options=['scores', 'figures', 'states'], display = True, scores_window=0):
