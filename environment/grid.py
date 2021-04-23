@@ -73,8 +73,29 @@ class GridEnv(gym.Env):
         self.agents_fully_observable = agents_fully_observable
         self.players_starting = None
         self.goals_starting = None
+        self.all_possibilities=list(itertools.product(range(0,self.grid_size), repeat = 2))
+        self.working_possibilites = self.all_possibilities.copy()
+
+        self.init_goals()
+        self.init_agents()
 
         self.reset()
+
+    def init_goals(self):
+        self.goals = []
+        for _ in range(0, self.num_agent):
+            goal = random.choice(self.working_possibilites)
+            self.working_possibilites.remove(goal)
+            self.goals.append(goal)
+        self.goals_starting = self.goals.copy()
+
+    def init_agents(self):
+        self.players = []
+        for _ in range(0, self.num_agent):
+            start = random.choice(self.working_possibilites)
+            self.working_possibilites.remove(start)
+            self.players.append(start)
+        self.players_starting = self.players.copy()
 
     def step(self, actions):
         self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]
@@ -98,27 +119,17 @@ class GridEnv(gym.Env):
     def reset(self):
         self.grid = new_grid(self.grid_size)
 
-        all_possibilities = list(itertools.product(range(0,self.grid_size), repeat = 2))
         if self.fixed_goals == False or self.goals_starting == None:
-            self.goals = []
-            for _ in range(0, self.num_agent):
-                goal = random.choice(all_possibilities)
-                all_possibilities.remove(goal)
-                self.goals.append(goal)
-            self.goals_starting = self.goals.copy()
+            self.init_goals()
         elif self.fixed_goals == True and self.goals_starting != None:
             self.goals = self.goals_starting.copy()
 
         if self.fixed_start == False or self.players_starting == None:
-            self.players = []
-            for _ in range(0, self.num_agent):
-                start = random.choice(all_possibilities)
-                all_possibilities.remove(start)
-                self.players.append(start)
-            self.players_starting = self.players.copy()
+            self.init_agents()
         elif self.fixed_start == True and self.players_starting != None:
             self.players = self.players_starting.copy()
         
+        self.working_possibilites = self.all_possibilities.copy()
         return self.__get_state()
 
     def __get_state(self):

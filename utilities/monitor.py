@@ -16,7 +16,7 @@ def calculate_moving_avarage(scores, num_agent=1, scores_window=100):
     return moving_avarages
 
 
-def render_figure(scores, agents, scores_window=0, path="", goal=0, save=False, display= True):
+def render_figure(scores, agents, name="", scores_window=0, path="", goal=0, save=False, display= True):
     if len(path) < 1:
         path = 'experiments/saved/'
 
@@ -25,6 +25,9 @@ def render_figure(scores, agents, scores_window=0, path="", goal=0, save=False, 
 
     # --- Plot labels --- #
     parameter_string, for_filename = agents[0].get_title()
+
+    # plt.suptitle(name,fontsize=24, y=1)
+    # plt.title(parameter_string,fontsize=16)
     plt.title(parameter_string)
     plt.ylabel('Score')
     plt.xlabel('Episode #')
@@ -47,14 +50,13 @@ def render_figure(scores, agents, scores_window=0, path="", goal=0, save=False, 
     if goal > 0.: plt.axhline(y=goal, color='c', linestyle='--')
 
     # --- Save and Display --- #
-    if save: plt.savefig("{}Figure_{}_{}.jpg".format(path, time.strftime(
-            "%Y-%m-%d_%H%M%S"), for_filename), bbox_inches='tight')
+    if save: plt.savefig("{}{}_figure_{}.jpg".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), bbox_inches='tight')
     if display: plt.show()
 
 
 
 
-def save_scores(scores, agents, path=""):
+def save_scores(scores, agents, name="",  path=""):
     if len(path) < 1:
         path = 'experiments/saved/'
 
@@ -64,7 +66,7 @@ def save_scores(scores, agents, path=""):
 
     _, for_filename = agents[0].get_title()
 
-    with open("{}Scores_{}_{}.csv".format(path, time.strftime("%Y-%m-%d_%H%M%S"), for_filename), 'w', newline='') as myfile:
+    with open("{}{}_scores_{}.csv".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), 'w', newline='') as myfile:
         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
         wr.writerow(scores)
 
@@ -87,10 +89,10 @@ def read_scores(network_name=''.format(time.strftime("%Y-%m-%d_%H%M")), path='')
 
         return parsed
 
-def save_states(states, path="", num_agent=1, grid_size=8):
+def save_states(states, name="", path=""):
     if len(path) < 1:
         path = 'experiments/saved/'
 
-    with open("{}States_{}_{}_{}.csv".format(path, time.strftime("%Y-%m-%d_%H%M%S"), str(num_agent), str(grid_size)), "w", newline="") as f:
+    with open("{}{}_states_{}.csv".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(states)
