@@ -13,7 +13,7 @@ def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20,
         scores = np.zeros(len(agents))
 
         for i in range(max_t):
-            if save_states_every > 0 and episode % save_states_every == 0:
+            if not save_states_every < 1 and episode % save_states_every == 0:
                 state_history.append(states)
 
 

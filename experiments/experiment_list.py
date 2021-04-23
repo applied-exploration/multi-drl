@@ -45,7 +45,7 @@ import itertools
 # grid_size = np.array([3])
 
 
-num_agent = np.array([ 2, 3, 4])
+num_agent = np.array([1, 2, 3, 4])
 agents_start = np.array([True])
 goals_start = np.array([True, False])
 prob_right_direction = np.array([1, 0.7])
