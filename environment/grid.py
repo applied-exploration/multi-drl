@@ -1,6 +1,7 @@
 
 import gym
 from random import randrange
+import random
 from gym import error, spaces, utils
 from gym.utils import seeding
 from enum import IntEnum
@@ -57,7 +58,7 @@ def limit_to_size(pos, grid_size):
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, agents_start = [], goals_start=[], agents_fully_observable = False, render_board = False):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, fixed_start = False, fixed_goals = False, agents_fully_observable = False, render_board = False):
         self.num_agent = num_agent
         self.grid_size = grid_size
         self.prob_right_direction = prob_right_direction
@@ -66,17 +67,12 @@ class GridEnv(gym.Env):
             self.state_space = num_agent * 4        
         else:
             self.state_space = 4
-        self.agents_start = agents_start
-        self.goals_start = goals_start
+        self.fixed_start = fixed_start
+        self.fixed_goals = fixed_goals
         self.render_board = render_board
         self.agents_fully_observable = agents_fully_observable
-
-        if len(self.agents_start) > self.num_agent or len(self.goals_start) > self.num_agent: 
-            # print("Too many arguments for agent or goal, going to truncate")
-            self.agents_start = self.agents_start[:self.num_agent]
-            self.goals_start = self.goals_start[:self.num_agent]
-        # if self.num_agent > len(self.agents_start): print("Not all _agents_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.agents_start)))
-        # if self.num_agent > len(self.goals_start): print("Not all _goals_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.goals_start)))
+        self.players_starting = None
+        self.goals_starting = None
 
         self.reset()
 
@@ -101,21 +97,34 @@ class GridEnv(gym.Env):
  
     def reset(self):
         self.grid = new_grid(self.grid_size)
-        self.players = [*self.agents_start, *unique([new_pos([], self.grid_size) for x in np.arange(self.num_agent-len(self.agents_start))])] 
-        self.goals = [*self.goals_start, *unique([new_pos(self.players, self.grid_size) for x in np.arange(self.num_agent-len(self.goals_start))])] 
-        
-        
-        # If we there are duplicate positions, retry
-        if len(self.players) != self.num_agent or len(self.goals) != self.num_agent:
-            return self.reset()
 
+        all_possibilities = list(itertools.product(range(0,self.grid_size), repeat = 2))
+        if self.fixed_goals == False or self.goals_starting == None:
+            self.goals = []
+            for _ in range(0, self.num_agent):
+                goal = random.choice(all_possibilities)
+                all_possibilities.remove(goal)
+                self.goals.append(goal)
+            self.goals_starting = self.goals.copy()
+        elif self.fixed_goals == True and self.goals_starting != None:
+            self.goals = self.goals_starting.copy()
+
+        if self.fixed_start == False or self.players_starting == None:
+            self.players = []
+            for _ in range(0, self.num_agent):
+                start = random.choice(all_possibilities)
+                all_possibilities.remove(start)
+                self.players.append(start)
+            self.players_starting = self.players.copy()
+        elif self.fixed_start == True and self.players_starting != None:
+            self.players = self.players_starting.copy()
+        
         return self.__get_state()
 
     def __get_state(self):
         players_goals = list(map(flatten, list(zip(self.players, self.goals))))
         players_goals = list(map(lambda inner_array: list(map(lambda x: x / self.grid_size, inner_array)), players_goals))
         if self.agents_fully_observable == False:
-
             return players_goals
         else:
             return [flatten(players_goals) for i in range(self.num_agent)]
