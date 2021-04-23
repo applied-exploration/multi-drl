@@ -119,6 +119,7 @@ class GridEnv(gym.Env):
         players_goals = list(map(flatten, list(zip(self.players, self.goals))))
         players_goals = list(map(lambda inner_array: list(map(lambda x: x / self.grid_size, inner_array)), players_goals))
         if self.agents_fully_observable == False:
+
             return players_goals
         else:
             return [flatten(players_goals) for i in range(self.num_agent)]
