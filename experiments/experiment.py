@@ -50,9 +50,9 @@ class Experiment():
 
 
     def save(self, score_history=[], state_history=[], options=['scores', 'figures', 'states'], display = True, scores_window=0):
-        if 'scores' in options: save_scores(score_history, agents = self.agents)
-        if 'states' in options: save_states(state_history, num_agent = self.environment.num_agent, grid_size = self.environment.grid_size)
-        render_figure(score_history, agents = self.agents, goal=self.goal, display=display, save= 'figures' in options, scores_window=scores_window) 
+        #if 'scores' in options: save_scores(score_history, agents = self.agents, name = self.name)
+        if 'states' in options: save_states(state_history, name=self.name)
+        render_figure(score_history, agents = self.agents, name=self.name,  goal=self.goal, display=display, save= 'figures' in options, scores_window=scores_window) 
 
     def __save_error(self, error):
         self.logger.error(str(error))
