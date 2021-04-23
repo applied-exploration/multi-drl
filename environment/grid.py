@@ -71,18 +71,14 @@ class GridEnv(gym.Env):
         self.render_board = render_board
         self.agents_fully_observable = agents_fully_observable
 
-        if len(self.agents_start) > num_agent or len(self.goals_start) > num_agent: 
-            print("Too many arguments for agent or goal, going to truncate")
+        if len(self.agents_start) > self.num_agent or len(self.goals_start) > self.num_agent: 
+            # print("Too many arguments for agent or goal, going to truncate")
             self.agents_start = self.agents_start[:self.num_agent]
             self.goals_start = self.goals_start[:self.num_agent]
-        if self.num_agent > len(self.agents_start): print("Not all _agents_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.agents_start)))
-        if self.num_agent > len(self.goals_start): print("Not all _goals_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.goals_start)))
+        # if self.num_agent > len(self.agents_start): print("Not all _agents_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.agents_start)))
+        # if self.num_agent > len(self.goals_start): print("Not all _goals_ have fixed starting positions, rest ({}) will be random".format(self.num_agent - len(self.goals_start)))
 
         self.reset()
-        
-        # print("")
-        # print("Final Self players: ", self.players)
-        # print("Final Self goals: ", self.goals)
 
     def step(self, actions):
         self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]

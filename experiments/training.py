@@ -2,7 +2,7 @@ from collections import deque
 import numpy as np
 from utilities.helper import flatten
 
-def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20, save_states = 0):
+def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20, save_states_every = 0):
     score_history = []
     state_history = []
     scores_deque = deque(score_history[-scores_window:], maxlen=scores_window)
@@ -13,15 +13,16 @@ def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20,
         scores = np.zeros(len(agents))
 
         for i in range(max_t):
+            if not save_states_every < 1 and episode % save_states_every == 0:
+                state_history.append(states)
+
+
             actions = [agent.act(state) for agent, state in zip(agents, states)]
 
             next_states, rewards, done = env.step(actions)
             [agent.step(state, action, reward, next_state, done) for agent, state, action, reward, next_state in zip(agents, states, actions, rewards, next_states)]
 
             scores += rewards
-
-            if save_states > 0 and i % save_states == 0:
-                state_history.append(states)
 
             states = next_states
             if done == True:

@@ -86,3 +86,11 @@ def read_scores(network_name=''.format(time.strftime("%Y-%m-%d_%H%M")), path='')
         parsed = [float(i) for i in read_score_history]
 
         return parsed
+
+def save_states(states, path="", num_agent=1, grid_size=8):
+    if len(path) < 1:
+        path = 'experiments/saved/'
+
+    with open("{}States_{}_{}_{}.csv".format(path, time.strftime("%Y-%m-%d_%H%M%S"), str(num_agent), str(grid_size)), "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(states)
