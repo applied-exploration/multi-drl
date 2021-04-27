@@ -52,9 +52,6 @@ prob_right_direction = np.array([1, 0.7])
 grid_size = np.array([4, 8, 12])
 #fully_observable = np.array([True, False])
 
-possible_starts = [(1,1),(1,3),(2,3),(3,3),(4,4),(6,7),(5,7),(3,7),(5,9),(5,10),(2,10)]
-possible_goals = [(3,1),(3,2),(2,1),(0,0),(3,6),(6,3),(1,7),(0,5),(0,9),(10,5),(10,2)]
-
 # --- AGENTS --- #
 # DDPG
 actor_critic = [[16], [32], [16, 16], [32, 32], [64, 64]]
