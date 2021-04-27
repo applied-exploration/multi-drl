@@ -25,7 +25,8 @@ class Model(nn.Module):
         self.sig = nn.Sigmoid()
         
     def forward(self, state):
-        x = F.relu(self.fc1(state))
+        x = torch.FloatTensor(state)
+        x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
 

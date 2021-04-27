@@ -28,7 +28,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class PPOAgent(Agent):
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, config = REINFORCEAgentConfig(), seed = 1, mode = 'testing'):
+    def __init__(self, state_size, action_size, config = PPOAgentConfig(), seed = 1, mode = 'testing'):
         """Initialize an Agent object.
         
         Params
@@ -42,7 +42,7 @@ class PPOAgent(Agent):
         self.seed = random.seed(seed)
         self.config = config
 
-        self.model = Model(state_size, action_size).to(device)
+        self.model = Model(state_size, action_size, seed = seed).to(device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.LR)
     
         self.episode_rewards = []
@@ -51,7 +51,7 @@ class PPOAgent(Agent):
 
         self.mode = mode
         self.game_t = 0
-        self.memory = Trajectories()
+        self.memory = Trajectories(seed, self.config.N_TRAJECTORIES)
     
     def get_title(self):
         for_title = "PPO Agent"
@@ -156,15 +156,14 @@ class PPOAgent(Agent):
 class Trajectories:
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, action_size, seed, batch_size, N_TRAJECTORIES):
+    def __init__(self, seed, N_TRAJECTORIES):
         """Initialize a ReplayBuffer object.
         Params
         ======
             buffer_size (int): maximum size of buffer
             batch_size (int): size of each training batch
         """
-        self.action_size = action_size
-        self.batch_size = batch_size
+
         self.buffer_size = N_TRAJECTORIES
         self.memory = [[]]#deque(maxlen=self.buffer_size)  # internal memory (deque)
 
