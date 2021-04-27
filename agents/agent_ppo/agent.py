@@ -12,6 +12,8 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+from .memory import ReplayBuffer
+
 
 class PPOAgentConfig:
     LR = 5e-4               # learning rate 
@@ -28,7 +30,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class PPOAgent(Agent):
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, config = PPOAgentConfig(), seed = 1, mode = 'testing'):
+    def __init__(self, state_size, action_size, config = PPOAgentConfig(), seed = 1, mode = '', max_t = 100):
         """Initialize an Agent object.
         
         Params
@@ -51,20 +53,29 @@ class PPOAgent(Agent):
 
         self.mode = mode
         self.game_t = 0
-        self.memory = Trajectories(seed, self.config.N_TRAJECTORIES)
+        self.max_t = max_t
+        # self.memory = Trajectories(seed, self.config.N_TRAJECTORIES, max_t = max_t)
+        self.memory = ReplayBuffer(action_size = self.action_size, seed= seed, batch_size = self.config.N_TRAJECTORIES, buffer_size= self.config.N_TRAJECTORIES)
+        self.run = 0
     
     def get_title(self):
         for_title = "PPO Agent"
         for_filename = "PPO"
         return for_title, for_filename
 
+    def save(self, experiment_num, num_agent):
+        torch.save(self.model.state_dict(), 'experiments/trained_agents/ppo_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
 
 
     def act(self, state):
-        if self.mode is 'testing': return self.model(state) # this gives back probabilities
+        p = self.model(state).detach().numpy()
+        action = np.random.choice(np.arange(self.action_size), p = p)
+
+        if self.mode is 'testing':  return action # this gives back probabilities
         elif self.mode is 'training': 
             # For the first steps collect create random steps to ensure we have a unique trajectory
-            action = np.random.choice(np.arange(self.action_size)) if self.game_t <= self.config.RANDOM_STEPS else self.model(state)
+            if self.game_t <= self.config.RANDOM_STEPS:
+                action = np.random.choice(np.arange(self.action_size))
             self.game_t += 1
             return action
 
@@ -73,26 +84,27 @@ class PPOAgent(Agent):
 
 
     def step(self, state, action, reward, next_state, done):
-        prob = self.model(state)
+        prob = self.model(state).detach().numpy()
 
-        self.memory.add(prob, state, action, reward, game_t = self.game_t)
+        self.memory.add(prob, state, action, reward, self.run) #, game_t = self.game_t, run = self.run)
 
 
     def reset(self):
-        self.game_t = 0 # reset the time step we are in the game
+        self.run += 1
 
-        if len(self.memory.memory) == self.config.N_TRAJECTORIES:
+        if self.run % self.config.N_TRAJECTORIES == 0:
+            print("this is true")
             trajectories = self.memory.get()
             self.__learn(trajectories)
             self.memory.reset()
+            self.game_t = 0 # reset the time step we are in the game
+            self.run = 0
 
         
 
 
     def __learn(self, trajectories):
         old_probs, states, actions, rewards = trajectories
-
-        total_rewards = np.sum(rewards, axis=0)
 
         for _ in range(self.config.SGD_epoch):
                 
@@ -108,7 +120,8 @@ class PPOAgent(Agent):
 
 
         R_future = self.__discounted_future(rewards, discount)
-        R_norm_future = self.__normalized_future(R_future)
+        print(R_future.shape)
+        R_norm_future = torch.tensor(self.__normalized_future(R_future),dtype=torch.int8, device=device)
         
         actions = torch.tensor(actions, dtype=torch.int8, device=device)
         rewards = torch.tensor(rewards, dtype=torch.int8, device=device)
@@ -118,12 +131,19 @@ class PPOAgent(Agent):
         new_probs = self.model(states) #pong_utils.states_to_prob(policy, states)
         #new_probs = torch.where(actions == pong_utils.RIGHT, new_probs, 1.0-new_probs)
         
+        print("")
+        print("")
+        print("new_probs: ", new_probs.size())
+        print("old_probs: ", old_probs.size())
         ratio = new_probs / (old_probs + 1e-7)
+        print("ratio: ", ratio.size())
         g_clamped = torch.clamp(ratio, 1-epsilon, 1+epsilon)
+        print("g_clamped size: ", g_clamped.size())
         g_PPO = torch.where(ratio < g_clamped, ratio, g_clamped)
         
-        
-        surrogates = (R_norm_future * g_PPO).mean()
+        print("R_norm_future: ", R_norm_future.size())
+        print("g_PPO: ",g_PPO.size())
+        surrogates = (R_norm_future * g_PPO.T).mean()
         # include a regularization term
         # this steers new_policy towards 0.5
         # prevents policy to become exactly 0 or 1 helps exploration
@@ -152,43 +172,3 @@ class PPOAgent(Agent):
         
         return rewards_normalized
 
-
-class Trajectories:
-    """Fixed-size buffer to store experience tuples."""
-
-    def __init__(self, seed, N_TRAJECTORIES):
-        """Initialize a ReplayBuffer object.
-        Params
-        ======
-            buffer_size (int): maximum size of buffer
-            batch_size (int): size of each training batch
-        """
-
-        self.buffer_size = N_TRAJECTORIES
-        self.memory = [[]]#deque(maxlen=self.buffer_size)  # internal memory (deque)
-
-        self.seed = random.seed(seed)
-    
-    def add(self, prob, state, action, reward, game_t ):
-        """Add a new experience to memory."""
-
-        self.memory[game_t]["probs"].append(prob)
-        self.memory[game_t]["states"].append(state)
-        self.memory[game_t]["actions"].append(action)
-        self.memory[game_t]["rewards"].append(reward)
-
-    def reset(self):
-        self.memory = deque(maxlen=self.buffer_size)
-
-    def get(self):
-        """Randomly sample a batch of experiences from memory."""
-        probs = [memory_game_t.probs for memory_game_t in self.memory]
-        states = [memory_game_t.probs for memory_game_t in self.memory]
-        actions = [memory_game_t.probs for memory_game_t in self.memory]
-        rewards = [memory_game_t.probs for memory_game_t in self.memory]
-
-        return (probs, states, actions, rewards)
-
-    def __len__(self):
-        """Return the current size of internal memory."""
-        return len(self.memory)

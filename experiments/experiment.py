@@ -28,13 +28,12 @@ class Experiment():
         self.logger = logging.getLogger(str(self.id))
         self.logger.info("Starting Experiment {}".format(self.name))
 
-    def run(self, development_mode = False):
+    def run(self, development_mode = True):
         self.score_history, self.state_history = [], []
         if development_mode == False:
             try:
                 self.score_history, self.state_history = train(env=self.environment,
                                                     agents=self.agents,
-                                                    brain_name = self.brain_name,
                                                     max_t=self.max_t,
                                                     num_episodes=self.num_episodes,
                                                     score_history = self.score_history,
@@ -50,7 +49,6 @@ class Experiment():
         else:
             return train(env=self.environment,
                         agents=self.agents,
-                        brain_name = self.brain_name,
                         max_t=self.max_t,
                         num_episodes=self.num_episodes,
                         save_states_every=self.save_states_every,

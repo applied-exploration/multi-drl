@@ -22,7 +22,7 @@ class Model(nn.Module):
         self.fc3 = nn.Linear(fc2_units, action_size)
 
         # Sigmoid to 
-        self.sig = nn.Sigmoid()
+        self.activation =  F.softmax
         
     def forward(self, state):
         x = torch.FloatTensor(state)
@@ -30,7 +30,7 @@ class Model(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
 
-        return self.sig(x)
+        return self.activation(x)
     
 class ConvModel(nn.Module):
 
