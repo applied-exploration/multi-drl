@@ -78,7 +78,7 @@ Question: Will a DQN Agent and a REINFORCE Agent converage on a multi-agent envi
 Hypothesis: Both Agents' hyperparameters can be tuned to work in a multi-agent environment.
 Setup: 
     Grid-size: 5 x 5
-    Num Agents: 1
+    Num Agents: [2, 3]
     Agents, Goals randomized
     Stochastic: 0.7
 
@@ -134,6 +134,5 @@ __exp4_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_ri
 
 exp4_dqn = list(itertools.product(*__exp4_dqn))
 exp4_rei = list(itertools.product(*__exp4_rei))
-
 
 
