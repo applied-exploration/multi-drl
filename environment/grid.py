@@ -9,6 +9,7 @@ import numpy as np
 from typing import List, Tuple
 import itertools
 from iteration_utilities import duplicates , unique_everseen
+import math
 from utilities.helper import unique, flatten
 
 
@@ -55,18 +56,30 @@ def move(pos, action, prob = 1):
 def limit_to_size(pos, grid_size):
     return tuple(map(lambda x: max(min(x, grid_size - 1), 0), pos))
 
+
+def view_on_grid(grid, pos, view_size):
+    padding = math.floor(view_size / 2)
+    padded = np.pad(grid, padding, mode='constant', constant_values=-1)
+    x, y = pos[0] - view_size, pos[1] - view_size
+    return grid[x:x+view_size, y:y+view_size]
+
+
 class GridEnv(gym.Env):  
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, fixed_start = False, fixed_goals = False, agents_fully_observable = False, render_board = False):
+    def __init__(self, num_agent = 2, grid_size = 8, prob_right_direction = 1, fixed_start = False, fixed_goals = False, agents_fully_observable = False, grid_observation=False, render_board = False):
         self.num_agent = num_agent
         self.grid_size = grid_size
+        self.grid_observation = grid_observation
         self.prob_right_direction = prob_right_direction
         self.action_space = spaces.Discrete(4)
-        if agents_fully_observable == True:
-            self.state_space = num_agent * 4        
+        if grid_observation == True:
+            self.state_space = spaces.MultiBinary([grid_size, grid_size])
         else:
-            self.state_space = 4
+            if agents_fully_observable == True:
+                self.state_space = spaces.Box(low=0.0, high=1.0, shape=(4 * num_agent, 1), dtype=np.float32)   
+            else:
+                self.state_space = spaces.Box(low=0.0, high=1.0, shape=(4, 1), dtype=np.float32)  
         self.fixed_start = fixed_start
         self.fixed_goals = fixed_goals
         self.render_board = render_board
@@ -76,12 +89,12 @@ class GridEnv(gym.Env):
         self.all_possibilities=list(itertools.product(range(0,self.grid_size), repeat = 2))
         self.working_possibilites = self.all_possibilities.copy()
 
-        self.init_goals()
-        self.init_agents()
+        self.__init_goals()
+        self.__init_agents()
 
         self.reset()
 
-    def init_goals(self):
+    def __init_goals(self):
         self.goals = []
         for _ in range(0, self.num_agent):
             goal = random.choice(self.working_possibilites)
@@ -89,7 +102,7 @@ class GridEnv(gym.Env):
             self.goals.append(goal)
         self.goals_starting = self.goals.copy()
 
-    def init_agents(self):
+    def __init_agents(self):
         self.players = []
         for _ in range(0, self.num_agent):
             start = random.choice(self.working_possibilites)
@@ -120,12 +133,12 @@ class GridEnv(gym.Env):
         self.grid = new_grid(self.grid_size)
 
         if self.fixed_goals == False or self.goals_starting == None:
-            self.init_goals()
+            self.__init_goals()
         elif self.fixed_goals == True and self.goals_starting != None:
             self.goals = self.goals_starting.copy()
 
         if self.fixed_start == False or self.players_starting == None:
-            self.init_agents()
+            self.__init_agents()
         elif self.fixed_start == True and self.players_starting != None:
             self.players = self.players_starting.copy()
         
@@ -133,21 +146,35 @@ class GridEnv(gym.Env):
         return self.__get_state()
 
     def __get_state(self):
-        players_goals = list(map(flatten, list(zip(self.players, self.goals))))
-        players_goals = list(map(lambda inner_array: list(map(lambda x: x / self.grid_size, inner_array)), players_goals))
-        if self.agents_fully_observable == False:
-            return players_goals
+        if self.grid_observation == True:
+            grids = [self.__get_grid(index) for index, _ in enumerate(self.players)]
+            return grids
         else:
-            return [flatten(players_goals) for i in range(self.num_agent)]
+            players_goals = list(map(flatten, list(zip(self.players, self.goals))))
+            players_goals = list(map(lambda inner_array: list(map(lambda x: x / self.grid_size, inner_array)), players_goals))
+            if self.agents_fully_observable == False:
+                return players_goals
+            else:
+                return [flatten(players_goals) for i in range(self.num_agent)]
 
 
-    def render(self, mode='human', close=False):
+    def __get_grid(self, player_index):
         annotated_grid = np.copy(self.grid)
-        for index, player in enumerate(self.players):
-            annotated_grid[player[1]][player[0]] = index + 1
+        # rearrange the players / goals lists, so the current player (player_index) is always the first element,
+        # so we get a stable id for the current agent
+        rearranged_players = self.players.copy()
+        rearranged_players.remove(self.players[player_index])
+        rearranged_players.insert(0, self.players[player_index])
+        rearranged_goals = self.goals.copy()
+        rearranged_goals.remove(self.goals[player_index])
+        rearranged_goals.insert(0, self.goals[player_index])
 
-        for index, goal in enumerate(self.goals):
+        for index, player in enumerate(rearranged_players):
+            annotated_grid[player[1]][player[0]] = index + 1
+        for index, goal in enumerate(rearranged_goals):
             annotated_grid[goal[1]][goal[0]] = (index +1) * 10 + (index + 1)
+
         return annotated_grid
 
-    
+    def render(self, mode='human', close=False):
+        return self.__get_grid()
