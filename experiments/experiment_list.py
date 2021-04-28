@@ -93,7 +93,7 @@ __prob_right_direction = np.array([0.7])
 __grid_size = np.array([5])
 
 # --- agent params --- #
-__network_dqn = [[16], [32], [64]]
+__network_dqn = [[16, 16], [32, 32], [64, 64]]
 __network_rei = [[16], [32], [64]]
 
 __exp3_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
