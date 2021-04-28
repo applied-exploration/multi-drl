@@ -41,6 +41,5 @@ class QNetwork(nn.Module):
 
         return self.fc_out(x)
 
-        # x = F.relu(self.fc1(state))
         # x = F.relu(self.fc2(x))
         # return self.fc3(x)
