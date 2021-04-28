@@ -110,7 +110,7 @@ exp3_rei = list(itertools.product(*__exp3_rei))
 Question: Will a pretrained DQN and REINFORCE Agent converge on a larger map?
 Hypothesis: Both Agents can perform well on a larger environment.
 Setup: 
-    Grid-size: 5 x 5
+    Grid-size: [8x8, 12x12]
     Num Agents: 1
     Agents, Goals randomized
     Stochastic: 0.7
@@ -134,7 +134,6 @@ __exp4_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_ri
 
 exp4_dqn = list(itertools.product(*__exp4_dqn))
 exp4_rei = list(itertools.product(*__exp4_rei))
-
 
 
 
