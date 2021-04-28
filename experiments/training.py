@@ -1,8 +1,9 @@
 from collections import deque
 import numpy as np
 from utilities.helper import flatten
+import torch
 
-def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20, save_states_every = 0):
+def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20, save_states_every = 0, experiment_num=0):
     score_history = []
     state_history = []
     scores_deque = deque(score_history[-scores_window:], maxlen=scores_window)
@@ -37,7 +38,9 @@ def train(env, agents, max_t, num_episodes, scores_window=100, print_every = 20,
             if np.mean(scores_deque) > last_running_mean:
                     # print("")
                     # print('Last {} was better, going to save it'.format(scores_window))
-                    [agent.save() for agent in agents]
+                    for num_agent, agent in enumerate(agents):
+                        agent.save(experiment_num, num_agent)
+
                     last_running_mean = np.mean(scores_deque)
      
             print("\r", 'Total score (averaged over agents) {} episode: {} | \tAvarage in last {} is {}'.format(episode, returns_in_episode, scores_window, np.mean(scores_deque)), end="")
