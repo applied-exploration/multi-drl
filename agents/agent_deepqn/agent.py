@@ -66,6 +66,9 @@ class DeepQAgent(Agent):
         for_filename = "Network size_{}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
         return for_title, for_filename
 
+    def save(self, experiment_num, num_agent):
+        torch.save(self.qnetwork_local.state_dict(), 'experiments/trained_agents/dqn_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
+
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
         self.memory.add(state, action, reward, next_state, done)

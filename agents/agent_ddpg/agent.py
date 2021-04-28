@@ -95,6 +95,9 @@ class DDPG_Agent(Agent):
         for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in self.config.ACTOR_H]), ' '.join([str(elem) for elem in self.config.CRITIC_H]))
         return for_title, for_filename
 
+    def save(self, experiment_num, num_agent):
+        torch.save(self.actor_local.state_dict(), 'experiments/trained_agents/ddpg_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
+        torch.save(self.critic_local.state_dict(), 'experiments/trained_agents/ddpg_exp_{}__agent_{}_critic.pth'.format(experiment_num, num_agent))
 
     def reset(self):
         self.noise.reset()
