@@ -174,7 +174,7 @@ class GridEnv(gym.Env):
         for index, goal in enumerate(rearranged_goals):
             annotated_grid[goal[1]][goal[0]] = (index +1) * 10 + (index + 1)
 
-        return annotated_grid
+        return flatten(annotated_grid)
 
     def render(self, mode='human', close=False):
         return self.__get_grid()
