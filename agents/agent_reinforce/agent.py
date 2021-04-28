@@ -14,8 +14,14 @@ import torch.optim as optim
 
 
 class REINFORCEAgentConfig:
-    LR = 5e-4               # learning rate 
-    GAMMA = 1.0
+
+    def __init__(self,   
+                LR = 5e-4 , 
+                GAMMA = 1.0,    
+                HIDDEN_LAYER_SIZE = [32, 32]):
+        self.LR = LR               
+        self.GAMMA = GAMMA
+        self.HIDDEN_LAYER_SIZE = HIDDEN_LAYER_SIZE
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -37,7 +43,7 @@ class REINFORCEAgent(Agent):
         self.seed = random.seed(seed)
         self.config = config
 
-        self.model = Model(state_size, action_size).to(device)
+        self.model = Model(state_size, action_size, hidden_layer_param=self.config.HIDDEN_LAYER_SIZE).to(device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.LR)
     
         self.episode_rewards = []
@@ -48,6 +54,9 @@ class REINFORCEAgent(Agent):
         for_title = "REINFORCE Agent"
         for_filename = "REINFORCE"
         return for_title, for_filename
+
+    def save(self, experiment_num, num_agent):
+        torch.save(self.model.state_dict(), 'experiments/trained_agents/rei_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
 
     def act(self, state):
         action, log_prob = self.model.act(state)

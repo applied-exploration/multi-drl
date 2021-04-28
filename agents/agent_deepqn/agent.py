@@ -52,8 +52,8 @@ class DeepQAgent(Agent):
         self.config = config
 
         # Q-Network
-        self.qnetwork_local = QNetwork(state_size *samp_frames, action_size, seed, self.config.HIDDEN_LAYER_SIZE[0], self.config.HIDDEN_LAYER_SIZE[1]).to(device)
-        self.qnetwork_target = QNetwork(state_size *samp_frames, action_size, seed, self.config.HIDDEN_LAYER_SIZE[0], self.config.HIDDEN_LAYER_SIZE[1]).to(device)
+        self.qnetwork_local = QNetwork(state_size *samp_frames, action_size, seed, hidden_layer_param = self.config.HIDDEN_LAYER_SIZE).to(device)
+        self.qnetwork_target = QNetwork(state_size *samp_frames, action_size, seed, hidden_layer_param = self.config.HIDDEN_LAYER_SIZE).to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=self.config.LR)
 
         # Replay memory
