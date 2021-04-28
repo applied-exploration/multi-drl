@@ -73,10 +73,13 @@ class GridEnv(gym.Env):
         self.grid_observation = grid_observation
         self.prob_right_direction = prob_right_direction
         self.action_space = spaces.Discrete(4)
-        if agents_fully_observable == True:
-            self.state_space = num_agent * 4        
+        if grid_observation == True:
+            self.state_space = spaces.MultiBinary([grid_size, grid_size])
         else:
-            self.state_space = 4
+            if agents_fully_observable == True:
+                self.state_space = spaces.Box(low=0.0, high=1.0, shape=(4 * num_agent, 1), dtype=np.float32)   
+            else:
+                self.state_space = spaces.Box(low=0.0, high=1.0, shape=(4, 1), dtype=np.float32)  
         self.fixed_start = fixed_start
         self.fixed_goals = fixed_goals
         self.render_board = render_board
