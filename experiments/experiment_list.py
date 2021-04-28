@@ -1,76 +1,140 @@
-""" 
-ENVIRONMENTS
-======
-
-environments = Grid
-num_players = 1, 2, 3, 4
-fixed, semi-fixed, random 
-4x4, 8x8, 12x12
-stochastic, not stochastic
-
-1 x 4 x 3 x 3 x 2 = 72
-
-"""
-
-"""
-AGENTS
-======
-
-PPO
-[16, 16], [32, 32], [64, 64]
-
-DQN
-[16, 16], [32, 32], [64, 64]
-
-DDPG 
-actor  = [16, 16], [32, 32], [64, 64]
-critic = [16, 16], [32, 32], [64, 64]
-
-learning_rate = 0.0001, 0.001, 0.01
-learning_rate = 0.001, 0.001, 0.01
-
-3 x 3 x 3 = 27
-"""
-
-
-# --- ENVIRONMENT --- #
-
 import numpy as np
 import itertools
 
-# num_agent = np.array([2])
-# agents_start=np.array([True])
-# goals_start = np.array([False, True])
-# prob_right_direction = np.array([1])
-# grid_size = np.array([3])
+""" 
+--- Experiment Batch 1 ---
+
+Question: Will a DQN Agent and a REINFORCE Agent converage on a 
+    * fixed goal & fixed player
+    * random goal & fixed player
+    * fixed goal & random player
+    * random goal & random player
+Hypothesis: Both Agents' hyperparameters can be tuned to work in all 3 scenarios.
+Setup: 
+    Grid-size: 5 x 5
+    Num Agents: 1
+    Stochastic: 1.0
+
+Number of experiments: 1 x 2 x 2 x 3 x 2 = 24
+
+""" 
+
+# --- environment params --- #
+__num_agent = np.array([1])
+__agents_start = np.array([True, False])
+__goals_start = np.array([True, False])
+__prob_right_direction = np.array([1])
+__grid_size = np.array([5])
+
+# --- agent params --- #
+__network_dqn = [[16], [32], [64]]
+__network_rei = [[16], [32], [64]]
+
+__exp1_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp1_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp1_dqn = list(itertools.product(*__exp1_dqn))
+exp1_rei = list(itertools.product(*__exp1_rei))
 
 
-num_agent = np.array([1, 2, 3, 4])
-agents_start = np.array([True])
-goals_start = np.array([True, False])
-prob_right_direction = np.array([1, 0.7])
-grid_size = np.array([4, 8, 12])
-#fully_observable = np.array([True, False])
 
-# --- AGENTS --- #
-# DDPG
-actor_critic = [[16], [32], [16, 16], [32, 32], [64, 64]]
+""" 
+--- Experiment Batch 2 ---
 
-# PPO/REINFORCE
-network = [[16, 16], [32, 32], [64, 64]]
+Question: Will a DQN Agent and a REINFORCE Agent converage on a stochastic environment
+Hypothesis: Both Agents' hyperparameters can be tuned to work in a stochastic environment.
+Setup: 
+    Grid-size: 5 x 5
+    Num Agents: 1
+    Agents, Goals randomized
+    Stochastic: 0.7
 
-# DQN
-network_dqn = [[16], [32], [64]]
+Number of experiments: 3 + 3 = 6
+""" 
+
+# --- environment params --- #
+__num_agent = np.array([1])
+__agents_start = np.array([False])
+__goals_start = np.array([False])
+__prob_right_direction = np.array([0.7])
+__grid_size = np.array([5])
+
+# --- agent params --- #
+__network_dqn = [[16], [32], [64]]
+__network_rei = [[16], [32], [64]]
+
+__exp2_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp2_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp2_dqn = list(itertools.product(*__exp2_dqn))
+exp2_rei = list(itertools.product(*__exp2_rei))
 
 
-config_ddpg = [num_agent, grid_size, agents_start,
-               goals_start, prob_right_direction, actor_critic]
-config_ppo = [num_agent, grid_size, agents_start,
-              goals_start, prob_right_direction, network]
-config_dqn = [num_agent, grid_size, agents_start,
-              goals_start, prob_right_direction, network_dqn]
 
-exp_config_ddpg = list(itertools.product(*config_ddpg))
-exp_config_ppo = list(itertools.product(*config_ppo))
-exp_config_dqn = list(itertools.product(*config_dqn))
+""" 
+--- Experiment Batch 3 ---
+
+Question: Will a DQN Agent and a REINFORCE Agent converage on a multi-agent environment?
+Hypothesis: Both Agents' hyperparameters can be tuned to work in a multi-agent environment.
+Setup: 
+    Grid-size: 5 x 5
+    Num Agents: 1
+    Agents, Goals randomized
+    Stochastic: 0.7
+
+Number of experiments: 3 + 3 = 6
+""" 
+
+# --- environment params --- #
+__num_agent = np.array([2, 3])
+__agents_start = np.array([False])
+__goals_start = np.array([False])
+__prob_right_direction = np.array([0.7])
+__grid_size = np.array([5])
+
+# --- agent params --- #
+__network_dqn = [[16], [32], [64]]
+__network_rei = [[16], [32], [64]]
+
+__exp3_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp3_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp3_dqn = list(itertools.product(*__exp3_dqn))
+exp3_rei = list(itertools.product(*__exp3_rei))
+
+
+
+""" 
+--- Experiment Batch 4 ---
+
+Question: Will a pretrained DQN and REINFORCE Agent converge on a larger map?
+Hypothesis: Both Agents can perform well on a larger environment.
+Setup: 
+    Grid-size: 5 x 5
+    Num Agents: 1
+    Agents, Goals randomized
+    Stochastic: 0.7
+
+Number of experiments: 4 
+""" 
+
+# --- environment params --- #
+__num_agent = np.array([2, 3])
+__agents_start = np.array([False])
+__goals_start = np.array([False])
+__prob_right_direction = np.array([0.7])
+__grid_size = np.array([8, 12])
+
+__network_dqn = [[16]] ## Should be selected from previous best!
+__network_rei = [[16]] ## Should be selected from previous best!
+
+
+__exp4_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp4_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp4_dqn = list(itertools.product(*__exp4_dqn))
+exp4_rei = list(itertools.product(*__exp4_rei))
+
+
+
 

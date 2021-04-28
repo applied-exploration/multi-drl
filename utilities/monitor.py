@@ -50,7 +50,9 @@ def render_figure(scores, agents, name="", scores_window=0, path="", goal=0, sav
 
     # --- Plot moving avarages --- #
     if scores_window > 0:
-        moving_avarages = calculate_moving_avarage(scores, len(agents), scores_window=scores_window)
+        moving_avarages = []
+        if len(agents)>1: moving_avarages = calculate_moving_avarage(scores, len(agents), scores_window=scores_window)
+        else: moving_avarages = calculate_moving_avarage([scores], len(agents), scores_window=scores_window)
         best_of_two = calculate_moving_avarage(calculate_max(scores), 1, scores_window=scores_window)
 
         for i_agent in range(len(moving_avarages)):

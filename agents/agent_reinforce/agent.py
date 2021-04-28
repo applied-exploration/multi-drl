@@ -49,6 +49,9 @@ class REINFORCEAgent(Agent):
         for_filename = "REINFORCE"
         return for_title, for_filename
 
+    def save(self, experiment_num, num_agent):
+        torch.save(self.model.state_dict(), 'experiments/trained_agents/rei_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
+
     def act(self, state):
         action, log_prob = self.model.act(state)
         self.last_log_prob = log_prob
