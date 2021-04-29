@@ -13,6 +13,9 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+import uuid
+import time
+
 class DeepQAgentConfig:
 
     def __init__(self,   
@@ -60,14 +63,19 @@ class DeepQAgent(Agent):
         self.memory = ReplayBuffer(action_size, self.config.BUFFER_SIZE, self.config.BATCH_SIZE, seed, samp_frames)
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
-    
+
+        self.id = uuid.uuid4()
+
     def get_title(self):
-        for_title = "Network:: Hidden layers: {} LR: {}\nBuffer:: Size: {} | Batch size: {}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]), self.config.LR, self.config.BUFFER_SIZE, self.config.BATCH_SIZE )
-        for_filename = "Network size_{}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
-        return for_title, for_filename
+        for_id = "{} \n {}".format(time.strftime("%Y-%m-%d_%H%M%S"), self.id)
+        for_title = "DQN with Hidden layers: {}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
+        for_filename = "DQN_Network size_{}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
+        for_table = [['hidden layers', 'learning rate', 'buffer size', 'batch size'],[[' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE])], [self.config.LR], [self.config.BUFFER_SIZE], [self.config.BATCH_SIZE] ]]
+        return for_title, for_filename, for_table, for_id
 
     def save(self, experiment_num, num_agent):
-        torch.save(self.qnetwork_local.state_dict(), 'experiments/trained_agents/dqn_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
+        torch.save(self.qnetwork_local.state_dict(), 'experiments/trained_agents/{}_dqn_exp{}__agent{}_{}.pth'.format(time.strftime(
+            "%Y-%m-%d",experiment_num, num_agent, self.id)))
 
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory

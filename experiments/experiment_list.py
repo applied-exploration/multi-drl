@@ -27,8 +27,8 @@ __prob_right_direction = np.array([1])
 __grid_size = np.array([5])
 
 # --- agent params --- #
-__network_dqn = [[16], [32], [64]]
-__network_rei = [[16], [32], [64]]
+__network_dqn = [[32], [64], [32, 32],  [64, 64]]
+__network_rei = [[32], [64], [32, 32],  [64, 64]]
 
 __exp1_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
 __exp1_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
@@ -60,8 +60,8 @@ __prob_right_direction = np.array([0.7])
 __grid_size = np.array([5])
 
 # --- agent params --- #
-__network_dqn = [[16], [32], [64]]
-__network_rei = [[16], [32], [64]]
+__network_dqn = [[32], [64], [32, 32], [64, 64]]
+__network_rei = [[32], [64], [32, 32], [64, 64]]
 
 __exp2_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
 __exp2_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
@@ -93,8 +93,8 @@ __prob_right_direction = np.array([0.7])
 __grid_size = np.array([5])
 
 # --- agent params --- #
-__network_dqn = [[16, 16], [32, 32], [64, 64]]
-__network_rei = [[16], [32], [64]]
+__network_dqn =  [[32, 32], [64, 64]]
+__network_rei =  [[32, 32], [64, 64]]
 
 __exp3_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
 __exp3_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
@@ -106,6 +106,38 @@ exp3_rei = list(itertools.product(*__exp3_rei))
 
 """ 
 --- Experiment Batch 4 ---
+
+Question: Will a larger network perform better?
+Hypothesis: Both Agents can perform well with a larger network.
+Setup: 
+    Grid-size: [8x8, 12x12]
+    Num Agents: 2, 3
+    Agents, Goals randomized
+    Stochastic: 0.7
+
+Number of experiments: 4 
+""" 
+
+# --- environment params --- #
+__num_agent = np.array([2, 3])
+__agents_start = np.array([False])
+__goals_start = np.array([False])
+__prob_right_direction = np.array([0.7])
+__grid_size = np.array([5])
+
+__network_dqn = [[128, 128], [160, 160]] ## Should be selected from previous best!
+__network_rei = [[128, 128], [160, 160]] ## Should be selected from previous best!
+
+
+__exp5_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp5_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp5_dqn = list(itertools.product(*__exp5_dqn))
+exp5_rei = list(itertools.product(*__exp5_rei))
+
+
+""" 
+--- Experiment Batch 5 ---
 
 Question: Will a pretrained DQN and REINFORCE Agent converge on a larger map?
 Hypothesis: Both Agents can perform well on a larger environment.
