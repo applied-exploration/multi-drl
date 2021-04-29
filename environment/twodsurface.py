@@ -70,7 +70,7 @@ class TwoDSurfaceEnv(gym.Env):
         self.prob_right_direction = prob_right_direction
         self.reset()
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2, num_agent), dtype=np.float32)
-        self.state_space = spaces.Box(low=0.0, high=grid_size, shape=(2, num_agent), dtype=np.float32)
+        self.state_space = spaces.Box(low=0.0, high=grid_size, shape=(4, num_agent), dtype=np.float32)
 
     def step(self, actions):
         self.players = [limit_to_size(move(player, action, self.prob_right_direction), self.grid_size) for player, action in zip(self.players, actions)]
