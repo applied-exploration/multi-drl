@@ -29,24 +29,44 @@ def render_figure(scores, agents, name="", scores_window=0, path="", goal=0, sav
     if len(path) < 1:
         path = 'experiments/saved/'
 
+
+
+    # fig, (ax, tb) = plt.subplots(nrows=1, ncols=2)
     fig = plt.figure()
-    ax = fig.add_subplot(111)
+
+    ax = fig.add_subplot(1, 3, (1, 2))
+    tb = fig.add_subplot(1, 3, 3)
 
     # --- Plot labels --- #
     parameter_string, for_filename = agents[0].get_title()
 
-    # plt.suptitle(name,fontsize=24, y=1)
-    # plt.title(parameter_string,fontsize=16)
-    plt.title(parameter_string)
-    plt.ylabel('Score')
-    plt.xlabel('Episode #')
+
+    ax.set_title(parameter_string[1])
+    ax.set_ylabel('Score')
+    ax.set_xlabel('Episode #')
+
+    fig.text(0.975, 0.1, parameter_string[0], size=7, color='gray', 
+        horizontalalignment='right',
+        verticalalignment='top')
+
+    # --- Plot table --- #
+    tb.axis('tight')
+    tb.axis("off")
+    rows = ['# of agents', 'stochasticity', 'grid size', 'agent fixed', 'goal fixed']
+    columns = ['Exp1']
+    cell_text = [['3'], ['0.7'], ['5 x 5'], ['True'], ['False']]
+    he_table = tb.table(cellText=cell_text,
+                      rowLabels=rows,
+                      colLabels=columns, 
+                      loc='center right')
+
 
     # --- Plot scores --- #
     if len(agents)>1: # multiple agents
         accumulated_by_agent = np.transpose(np.array(scores))
         for i_agent in range(len(agents)):
-            plt.plot(np.arange(1, len(accumulated_by_agent[i_agent])+1), accumulated_by_agent[i_agent])
-    else: plt.plot(np.arange(1, len(scores)+1), scores)
+            ax.plot(np.arange(1, len(accumulated_by_agent[i_agent])+1), accumulated_by_agent[i_agent])
+    else: ax.plot(np.arange(1, len(scores)+1), scores)
 
     # --- Plot moving avarages --- #
     if scores_window > 0:
@@ -56,14 +76,16 @@ def render_figure(scores, agents, name="", scores_window=0, path="", goal=0, sav
         best_of_two = calculate_moving_avarage(calculate_max(scores), 1, scores_window=scores_window)
 
         for i_agent in range(len(moving_avarages)):
-            plt.plot(np.arange(len(moving_avarages[i_agent]) + scores_window)[scores_window:], moving_avarages[i_agent], 'g-')
+            ax.plot(np.arange(len(moving_avarages[i_agent]) + scores_window)[scores_window:], moving_avarages[i_agent], 'g-')
         
-        plt.plot(np.arange(len(best_of_two[0]) + scores_window)[scores_window:], best_of_two[0], 'k-')
-    if goal > 0.: plt.axhline(y=goal, color='c', linestyle='--')
+        ax.plot(np.arange(len(best_of_two[0]) + scores_window)[scores_window:], best_of_two[0], 'k-')
+    if goal > 0.: ax.axhline(y=goal, color='c', linestyle='--')
+
+    fig.tight_layout()
 
     # --- Save and Display --- #
-    if save: plt.savefig("{}{}_figure_{}.jpg".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), bbox_inches='tight')
-    if display: plt.show()
+    if save: fig.savefig("{}{}_figure_{}.jpg".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), bbox_inches='tight')
+    if display: fig.show()
 
 
 
