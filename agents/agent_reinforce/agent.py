@@ -64,7 +64,8 @@ class REINFORCEAgent(Agent):
         return for_title, for_filename, for_table, for_id
 
     def save(self, experiment_num, num_agent):
-        torch.save(self.model.state_dict(), 'experiments/trained_agents/rei_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
+        torch.save(self.model.state_dict(), 'experiments/trained_agents/{}_rei_exp{}__agent{}_{}.pth'.format(time.strftime(
+            "%Y-%m-%d"),experiment_num, num_agent, self.id))
 
     def act(self, state):
         action, log_prob = self.model.act(state)

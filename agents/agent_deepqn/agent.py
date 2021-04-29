@@ -75,7 +75,7 @@ class DeepQAgent(Agent):
 
     def save(self, experiment_num, num_agent):
         torch.save(self.qnetwork_local.state_dict(), 'experiments/trained_agents/{}_dqn_exp{}__agent{}_{}.pth'.format(time.strftime(
-            "%Y-%m-%d",experiment_num, num_agent, self.id)))
+            "%Y-%m-%d"),experiment_num, num_agent, self.id))
 
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
