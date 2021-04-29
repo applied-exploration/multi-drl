@@ -25,37 +25,48 @@ def calculate_max(scores):
     return new_scores
 
 
-def render_figure(scores, agents, name="", scores_window=0, path="", goal=0, save=False, display= True):
+def render_figure(scores, agents, env_params, name="", scores_window=0, path="", goal=0, save=False, display= True):
     if len(path) < 1:
         path = 'experiments/saved/'
-
-
 
     # fig, (ax, tb) = plt.subplots(nrows=1, ncols=2)
     fig = plt.figure()
 
     ax = fig.add_subplot(1, 3, (1, 2))
-    tb = fig.add_subplot(1, 3, 3)
+    tb1 = fig.add_subplot(2, 3, 3)
+    tb2 = fig.add_subplot(2, 3, 6)
 
     # --- Plot labels --- #
-    parameter_string, for_filename = agents[0].get_title()
+    for_title, for_filename, for_table, for_id = agents[0].get_title()
 
 
-    ax.set_title(parameter_string[1])
+    ax.set_title(for_title)
     ax.set_ylabel('Score')
     ax.set_xlabel('Episode #')
 
-    fig.text(0.975, 0.1, parameter_string[0], size=7, color='gray', 
+    fig.text(0.975, 0.1, for_id, size=7, color='gray', 
         horizontalalignment='right',
         verticalalignment='top')
 
     # --- Plot table --- #
-    tb.axis('tight')
-    tb.axis("off")
-    rows = ['# of agents', 'stochasticity', 'grid size', 'agent fixed', 'goal fixed']
-    columns = ['Exp1']
-    cell_text = [['3'], ['0.7'], ['5 x 5'], ['True'], ['False']]
-    he_table = tb.table(cellText=cell_text,
+    # for env #
+    tb1.axis('tight')
+    tb1.axis("off")
+    rows = env_params[0]
+    columns = ['Env']
+    cell_text = env_params[1]
+    tb1.table(cellText=cell_text,
+                      rowLabels=rows,
+                      colLabels=columns, 
+                      loc='center right')
+
+    # for agent #
+    tb2.axis('tight')
+    tb2.axis("off")
+    rows = for_table[0]
+    columns = ['Agent']
+    cell_text = for_table[1]
+    tb2.table(cellText=cell_text,
                       rowLabels=rows,
                       colLabels=columns, 
                       loc='center right')
@@ -98,7 +109,7 @@ def save_scores(scores, agents, name="",  path=""):
         print("Directory doesn't exist, going to create one first")
         os.makedirs(path)
 
-    _, for_filename = agents[0].get_title()
+    for_title, for_filename, for_table, for_id = agents[0].get_title()
 
     with open("{}{}_scores_{}.csv".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), 'w', newline='') as myfile:
         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)

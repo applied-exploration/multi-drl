@@ -12,6 +12,9 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+import uuid
+import time
+
 
 class REINFORCEAgentConfig:
 
@@ -49,11 +52,16 @@ class REINFORCEAgent(Agent):
         self.episode_rewards = []
         self.last_log_prob = None
         self.episode_log_probs = []
+
+        self.id = uuid.uuid4()
     
+
     def get_title(self):
-        for_title = "REINFORCE Agent"
-        for_filename = "REINFORCE"
-        return for_title, for_filename
+        for_id = "{} \n {}".format(time.strftime("%Y-%m-%d_%H%M%S"), self.id)
+        for_title = "REINFORCE with Hidden layers: {}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
+        for_filename = "REINFORCE_Network size_{}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
+        for_table = [['hidden layers', 'learning rate'],[[' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE])], [self.config.LR] ]]
+        return for_title, for_filename, for_table, for_id
 
     def save(self, experiment_num, num_agent):
         torch.save(self.model.state_dict(), 'experiments/trained_agents/rei_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
