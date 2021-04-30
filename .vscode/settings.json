@@ -1,0 +1,4 @@
+{
+    "jupyter.jupyterServerType": "local",
+    "python.pythonPath": "/home/azureuser/miniconda3/envs/py39/bin/python"
+}
