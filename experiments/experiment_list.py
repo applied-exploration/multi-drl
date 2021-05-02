@@ -129,11 +129,11 @@ __network_dqn = [[128, 128], [160, 160]] ## Should be selected from previous bes
 __network_rei = [[128, 128], [160, 160]] ## Should be selected from previous best!
 
 
-__exp5_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
-__exp5_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+__exp4_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp4_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
 
-exp5_dqn = list(itertools.product(*__exp5_dqn))
-exp5_rei = list(itertools.product(*__exp5_rei))
+exp4_dqn = list(itertools.product(*__exp4_dqn))
+exp4_rei = list(itertools.product(*__exp4_rei))
 
 
 """ 
@@ -161,10 +161,10 @@ __network_dqn = [[16]] ## Should be selected from previous best!
 __network_rei = [[16]] ## Should be selected from previous best!
 
 
-__exp4_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
-__exp4_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+__exp5_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp5_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
 
-exp4_dqn = list(itertools.product(*__exp4_dqn))
-exp4_rei = list(itertools.product(*__exp4_rei))
+exp5_dqn = list(itertools.product(*__exp5_dqn))
+exp5_rei = list(itertools.product(*__exp5_rei))
 
 
