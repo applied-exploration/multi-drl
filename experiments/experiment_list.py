@@ -123,9 +123,9 @@ __num_agent = np.array([2, 3])
 __agents_start = np.array([False])
 __goals_start = np.array([False])
 __prob_right_direction = np.array([0.7])
-__grid_size = np.array([5])
+__grid_size = np.array([8])
 
-__network_dqn = [[128, 128], [160, 160]] ## Should be selected from previous best!
+__network_dqn = [[96,96], [128, 128], [160, 160], [180, 180]] ## Should be selected from previous best!
 __network_rei = [[128, 128], [160, 160]] ## Should be selected from previous best!
 
 
