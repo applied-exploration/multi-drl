@@ -56,7 +56,7 @@ class Experiment():
 
 
 
-    def save(self, score_history=[], state_history=[], options=['scores', 'figures', 'states'], display = True, scores_window=0):
+    def save(self, score_history=[], state_history=[], options=['scores', 'figures', 'states'], display = True, scores_window=100):
         if 'scores' in options: save_scores(score_history, agents = self.agents, name = self.name)
         if 'states' in options: save_states(state_history, name=self.name)
         env = self.environment
