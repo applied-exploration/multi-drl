@@ -206,3 +206,40 @@ __exp7_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_ri
 
 exp7_dqn = list(itertools.product(*__exp7_dqn))
 exp7_rei = list(itertools.product(*__exp7_rei))
+
+
+## Final Experiment 8
+
+__num_agent = np.array([2, 3])
+__agents_start = np.array([False])
+__goals_start = np.array([False])
+__prob_right_direction = np.array([0.7])
+__grid_size = np.array([5])
+
+__network_dqn = [[96, 96], [128, 128]] ## Should be selected from previous best!
+__network_rei = [[96, 96], [128, 128]] ## Should be selected from previous best!
+
+
+__exp8_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp8_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp8_dqn = list(itertools.product(*__exp8_dqn))
+exp8_rei = list(itertools.product(*__exp8_rei))
+
+## Final Experiment 9
+
+__num_agent = np.array([2])
+__agents_start = np.array([False])
+__goals_start = np.array([False])
+__prob_right_direction = np.array([0.7])
+__grid_size = np.array([8, 12])
+
+__network_dqn = [[96, 96], [128, 128]] ## Should be selected from previous best!
+__network_rei = [[96, 96], [128, 128]] ## Should be selected from previous best!
+
+
+__exp9_dqn = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_dqn]
+__exp9_rei = [__num_agent, __grid_size, __agents_start, __goals_start, __prob_right_direction, __network_rei]
+
+exp9_dqn = list(itertools.product(*__exp9_dqn))
+exp9_rei = list(itertools.product(*__exp9_rei))
