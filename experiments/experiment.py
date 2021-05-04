@@ -58,7 +58,7 @@ class Experiment():
 
     def save(self, score_history=[], state_history=[], options=['scores', 'figures', 'states'], display = True, scores_window=100):
         if 'scores' in options: save_scores(score_history, agents = self.agents, name = self.name)
-        if 'states' in options: save_states(state_history, name=self.name)
+        if 'states' in options and len(state_history) > 5: save_states(state_history, name=self.name)
         env = self.environment
         render_figure(score_history, self.agents, 
             env_params = [['# of agents', 'grid size', 'stochasticity',  'agent fixed', 'goal fixed', 'max t'],[[env.num_agent], [env.grid_size], [env.prob_right_direction], [env.fixed_start], [env.fixed_goals], [self.max_t]]], 
