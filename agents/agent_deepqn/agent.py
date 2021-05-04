@@ -70,7 +70,7 @@ class DeepQAgent(Agent):
         for_id = "{} \n {}".format(time.strftime("%Y-%m-%d_%H%M%S"), self.id)
         for_title = "DQN with Hidden layers: {}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
         for_filename = "DQN_Network size_{}".format(' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE]))
-        for_table = [['hidden layers', 'learning rate', 'buffer size', 'batch size'],[[' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE])], [self.config.LR], [self.config.BUFFER_SIZE], [self.config.BATCH_SIZE] ]]
+        for_table = [['hidden layer', 'lr rate', 'buffer size', 'batch size'],[[' '.join([str(elem) for elem in self.config.HIDDEN_LAYER_SIZE])], [self.config.LR], [self.config.BUFFER_SIZE], [self.config.BATCH_SIZE] ]]
         return for_title, for_filename, for_table, for_id
 
     def save(self, experiment_num, num_agent):

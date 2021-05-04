@@ -6,6 +6,8 @@ import numpy as np
 import random                       # Used for random seed
 # This is used for the mixing of target and local model parameters
 import copy
+import time
+import uuid
 
 # from .constants import *             # Capital lettered variables are constants from the constants.py file
 # Our replaybuffer, where we store the experiences
@@ -34,23 +36,19 @@ class DDPG_Agent(Agent):
         self.state_size=state_size
         self.state_size=action_size
 
-        # self.actor_local = Actor(state_size, action_size, random_seed).to(DEVICE)
-        # self.actor_target = Actor(state_size, action_size, random_seed).to(DEVICE)
-        # self.critic_local = Critic(state_size, action_size, random_seed).to(DEVICE)
-        # self.critic_target = Critic(state_size, action_size, random_seed).to(DEVICE)
+        # Creating Actor network
         self.actor_local = Actor(state_size, action_size, seed, hidden_layer_param=self.config.ACTOR_H,
                                  output_type=self.config.OUTPUT_TYPE).to(DEVICE)
         self.actor_target = Actor(state_size, action_size, seed,
                                   hidden_layer_param=self.config.ACTOR_H, output_type=self.config.OUTPUT_TYPE).to(DEVICE)
+        self.actor_opt = optim.Adam(self.actor_local.parameters(), lr=self.config.LR_ACTOR)
+        
+        # Creating Critic network
         self.critic_local = Critic(
             state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
         self.critic_target = Critic(
             state_size, action_size, seed, hidden_layer_param=self.config.CRITIC_H).to(DEVICE)
-
-        self.actor_opt = optim.Adam(
-            self.actor_local.parameters(), lr=self.config.LR_ACTOR)
-        self.critic_opt = optim.Adam(self.critic_local.parameters(
-        ), lr=self.config.LR_CRITIC, weight_decay=self.config.WEIGHT_DECAY)
+        self.critic_opt = optim.Adam(self.critic_local.parameters(), lr=self.config.LR_CRITIC, weight_decay=self.config.WEIGHT_DECAY)
 
         # Noise process
         self.noise = OUNoise(action_size, seed, self.config.MU,
@@ -69,7 +67,7 @@ class DDPG_Agent(Agent):
         self.last_action_probs = np.full(
             shape=action_size,  fill_value=1/action_size,  dtype=np.float)
 
-
+        self.id = uuid.uuid4()
 
     def __str__(self):
         print("")
@@ -90,14 +88,20 @@ class DDPG_Agent(Agent):
         print("")
         print("")
 
+
     def get_title(self):
-        for_title = "Network:: A: {} | C: {}\nLearning:: LR_A: {} | LR_C: {} | TAU: {} \nNoise:: MU: {} | THETA: {} | SIGMA: {}\nBuffer:: Size: {} | Batch size: {}".format(self.config.ACTOR_H, self.config.CRITIC_H, self.config.LR_ACTOR, self.config.LR_CRITIC, self.config.TAU, self.config.MU, self.config.THETA, self.config.SIGMA, self.config.BUFFER_SIZE, self.config.BATCH_SIZE)
-        for_filename = "A_{} - C_{}".format(' '.join([str(elem) for elem in self.config.ACTOR_H]), ' '.join([str(elem) for elem in self.config.CRITIC_H]))
-        return for_title, for_filename
+        for_id = "{} \n {}".format(time.strftime("%Y-%m-%d_%H%M%S"), self.id)
+        for_title = "DDPG with Hidden layers: A_{} | C_{}".format(' '.join([str(elem) for elem in self.config.ACTOR_H]), ' '.join([str(elem) for elem in self.config.CRITIC_H]))
+        for_filename = "DDPG_Network size_A_{}_C_{}".format(' '.join([str(elem) for elem in self.config.ACTOR_H]), ' '.join([str(elem) for elem in self.config.CRITIC_H]))
+        for_table = [['actor layer', 'critic layer', 'actor lr', 'critic lr', 'buffer size', 'batch size'],[[' '.join([str(elem) for elem in self.config.ACTOR_H])],[' '.join([str(elem) for elem in self.config.CRITIC_H])], [self.config.LR_ACTOR],[self.config.LR_CRITIC], [self.config.BUFFER_SIZE], [self.config.BATCH_SIZE] ]]
+        return for_title, for_filename, for_table, for_id
+
 
     def save(self, experiment_num, num_agent):
-        torch.save(self.actor_local.state_dict(), 'experiments/trained_agents/ddpg_exp_{}__agent_{}_actor.pth'.format(experiment_num, num_agent))
-        torch.save(self.critic_local.state_dict(), 'experiments/trained_agents/ddpg_exp_{}__agent_{}_critic.pth'.format(experiment_num, num_agent))
+        torch.save(self.actor_local.state_dict(), 'experiments/trained_agents/{}_dqn_exp{}__agent{}_{}_actor.pth'.format(time.strftime(
+            "%Y-%m-%d"),experiment_num, num_agent, self.id))
+        torch.save(self.critic_local.state_dict(), 'experiments/trained_agents/{}_dqn_exp{}__agent{}_{}_critic.pth'.format(time.strftime(
+            "%Y-%m-%d"),experiment_num, num_agent, self.id))
 
     def reset(self):
         self.noise.reset()
@@ -107,9 +111,7 @@ class DDPG_Agent(Agent):
             state = np.array(state)
 
         state = torch.from_numpy(state).float().to(DEVICE)
-        # action_probs = self.actor_local(state)
-        # print(action_probs)
-        # selected_index = np.random.choice(len(action_probs), size=1, p=action_probs.detach().numpy())
+
         self.actor_local.eval()
         with torch.no_grad():
             actions = self.actor_local(state).cpu().data.numpy()
@@ -120,8 +122,6 @@ class DDPG_Agent(Agent):
             self.last_action_probs = actions.copy()
 
             chosen_action = np.random.choice(len(actions), p=actions)
-            # print("action_prob: {}".format(actions))
-            # print("chosen_action: {}".format(chosen_action))
             return chosen_action
 
         elif self.output_type is 'vectors':

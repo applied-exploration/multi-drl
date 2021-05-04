@@ -33,8 +33,9 @@ def render_figure(scores, agents, env_params, name="", scores_window=0, path="",
     fig = plt.figure()
 
     ax = fig.add_subplot(1, 3, (1, 2))
-    tb1 = fig.add_subplot(2, 3, 3)
-    tb2 = fig.add_subplot(2, 3, 6)
+    tb1 = fig.add_subplot(3, 3, 3)
+    tb2 = fig.add_subplot(3, 3, 6)
+    tb3 = fig.add_subplot(3, 3, 9)
 
     # --- Plot labels --- #
     for_title, for_filename, for_table, for_id = agents[0].get_title()
@@ -48,7 +49,51 @@ def render_figure(scores, agents, env_params, name="", scores_window=0, path="",
         horizontalalignment='right',
         verticalalignment='top')
 
-    # --- Plot table --- #
+
+
+
+    # --- Plot scores --- #
+    if len(agents)>1: # multiple agents
+        accumulated_by_agent = np.transpose(np.array(scores))
+        for i_agent in range(len(agents)):
+            ax.plot(np.arange(1, len(accumulated_by_agent[i_agent])+1), accumulated_by_agent[i_agent])
+    else: ax.plot(np.arange(1, len(scores)+1), scores)
+
+    # --- Plot moving avarages --- #
+    best_avg_score = None
+    episode_achieved = 0
+    final_avarage = 0
+    highest = 0
+
+    if scores_window > 0:
+        moving_avarages = []
+        if len(agents)>1: 
+            moving_avarages = calculate_moving_avarage(scores, len(agents), scores_window=scores_window)
+
+            best_of_two = calculate_moving_avarage([calculate_max(scores)], 1, scores_window=scores_window)
+
+            episode_achieved = np.argmax(best_of_two[0])
+            best_avg_score = best_of_two[0][episode_achieved]
+            episode_achieved += scores_window
+            final_avarage = best_of_two[0][-1]
+            highest = max(scores[0])
+
+            ax.plot(np.arange(len(best_of_two[0]) + scores_window)[scores_window:], best_of_two[0], 'k-')
+        else:             
+            moving_avarages = calculate_moving_avarage(scores, len(agents), scores_window=scores_window)
+            
+            episode_achieved = np.argmax(moving_avarages[0])
+            best_avg_score = moving_avarages[0][episode_achieved]
+            episode_achieved += scores_window
+            final_avarage = moving_avarages[0][-1]
+            highest = max(scores)
+        
+        for i_agent in range(len(moving_avarages)):
+            ax.plot(np.arange(len(moving_avarages[i_agent]) + scores_window)[scores_window:], moving_avarages[i_agent], 'g-')
+        
+    if goal > 0.: ax.axhline(y=goal, color='c', linestyle='--')
+
+        # --- Plot table --- #
     # for env #
     tb1.axis('tight')
     tb1.axis("off")
@@ -72,29 +117,21 @@ def render_figure(scores, agents, env_params, name="", scores_window=0, path="",
                       loc='center right')
 
 
-    # --- Plot scores --- #
-    if len(agents)>1: # multiple agents
-        accumulated_by_agent = np.transpose(np.array(scores))
-        for i_agent in range(len(agents)):
-            ax.plot(np.arange(1, len(accumulated_by_agent[i_agent])+1), accumulated_by_agent[i_agent])
-    else: ax.plot(np.arange(1, len(scores)+1), scores)
+    # for scores #
+    tb3.axis('tight')
+    tb3.axis("off")
+    rows = ["best in {}".format(scores_window), "ep. achieved", "final avg.", "highest ep."]
+    columns = ['Scores']
+    cell_text = [['{:.1f}'.format(best_avg_score)], [episode_achieved], ['{:.1f}'.format(final_avarage)], [highest]]
+    tb3.table(cellText=cell_text,
+                      rowLabels=rows,
+                      colLabels=columns, 
+                      loc='center right')
 
-    # --- Plot moving avarages --- #
-    if scores_window > 0:
-        moving_avarages = []
-        if len(agents)>1: 
-            moving_avarages = calculate_moving_avarage(scores, len(agents), scores_window=scores_window)
 
-            best_of_two = calculate_moving_avarage([calculate_max(scores)], 1, scores_window=scores_window)
-            ax.plot(np.arange(len(best_of_two[0]) + scores_window)[scores_window:], best_of_two[0], 'k-')
-        else: moving_avarages = calculate_moving_avarage(scores, len(agents), scores_window=scores_window)
-        
-        for i_agent in range(len(moving_avarages)):
-            ax.plot(np.arange(len(moving_avarages[i_agent]) + scores_window)[scores_window:], moving_avarages[i_agent], 'g-')
-        
-    if goal > 0.: ax.axhline(y=goal, color='c', linestyle='--')
 
     fig.tight_layout()
+
 
     # --- Save and Display --- #
     if save: fig.savefig("{}{}_figure_{}.jpg".format(path, time.strftime("%Y-%m-%d_%H%M%S"), name), bbox_inches='tight')
